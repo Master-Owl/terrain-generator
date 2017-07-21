@@ -63,10 +63,10 @@ public class NoiseInterpreter {
 				if (val < cutoffs[0] && val >= 0)
 					return colors[x];
 			}
-//			else if (x == cutoffs.length - 1) {
-//				if (val < 1.0f && val >= cutoffs[x])
-//					return colors[x];
-//			}
+			else if (x == cutoffs.length - 1) {
+				if (val < 1.0f && val >= cutoffs[x])
+					return colors[x];
+			}
 			else {
 				if (val < cutoffs[x] && val >= cutoffs[x - 1])
 					return colors[x];
