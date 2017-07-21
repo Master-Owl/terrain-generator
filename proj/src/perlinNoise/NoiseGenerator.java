@@ -1,5 +1,6 @@
 package perlinNoise;
 
+import java.awt.Dimension;
 import java.util.Random;
 
 public class NoiseGenerator {
@@ -18,6 +19,41 @@ public class NoiseGenerator {
 		this.height = height;
 		this.whiteNoise = generateWhiteNoise();
 	}
+	
+	/**
+	 * Sets a new seed and updates the noise accordingly.
+	 * @param seed The new seed to use.
+	 */
+	public void setSeed(int seed) {
+		this.seed = seed;
+		whiteNoise = generateWhiteNoise();
+	}
+	
+	/** 
+	 * @return The current seed.
+	 */
+	public int getSeed() { return seed; }
+	
+	/**
+	 * Sets new dimensions and updates the noise accordingly.
+	 * @param width The new width to use.
+	 * @param height The new height to use.
+	 */
+	public void setDimensions(int width, int height) {
+		this.width = width;
+		this.height = height;
+		whiteNoise = generateWhiteNoise();
+	}
+	
+	/**
+	 * A shortcut to setDimensions(int, int).
+	 * @param dimension The dimension object to use.
+	 */
+	public void setDimensions(Dimension dimension) {
+		setDimensions(dimension.width, dimension.height);
+	}
+	
+	public Dimension getDimensions() { return new Dimension(width, height); }
 	
 	private int seed;
 	private int width;
@@ -48,7 +84,7 @@ public class NoiseGenerator {
 		float[][] smoothNoise = new float[width][height];
 		
 		int period = 1 << octave; // 2^octave
-		float frequency = 1 / period;
+		float frequency = 1.0f / period;
 		
 		for (int x = 0; x < width; ++x) {
 			// Horizontal indices
