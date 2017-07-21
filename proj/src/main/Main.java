@@ -28,7 +28,7 @@ public class Main {
 		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		window.setSize(500, 500);
 		
-		NoiseGenerator generator = new NoiseGenerator(rand.nextInt(), window.getSize().width, window.getSize().height);
+		NoiseGenerator generator = new NoiseGenerator(14573, window.getSize().width, window.getSize().height);
 		image = perlinNoise.Image
 				.RenderImage(NoiseInterpreter.GetGradientMap(generator.generatePerlinNoise(8), Color.white, Color.black));
 		

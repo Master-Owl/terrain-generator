@@ -114,10 +114,12 @@ public class NoiseGenerator {
 	 * The closer alpha is to 0, the closer the resulting value will be to num1, 
 	 * the closer alpha is to 1, the closer the resulting value will be to num2.
 	 * For gradient purposes.
-	 * @return A linear interpolation between num1 and num2.
+	 * @return A cosine interpolation between num1 and num2.
 	 */
 	private float interpolate(float num1, float num2, float alpha) {
-		return num1 * (1 - alpha) + alpha * num2;
+		double angle = alpha * Math.PI;
+		double prc = (1.0f - Math.cos(angle)) * 0.5f;
+		return (float)(num1 * (1.0f - prc) + prc * num2);
 	}
 	
 	/**
@@ -137,7 +139,7 @@ public class NoiseGenerator {
 		
 		// Generate the smooth noise for each octave
 		for (int i = 0; i < octaveCount; ++i) {
-			smoothNoise[i] = generateSmoothNoise(octaveCount);
+			smoothNoise[i] = generateSmoothNoise(i);
 		}
 		
 		float[][] perlinNoise = new float[width][height];
