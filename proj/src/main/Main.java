@@ -6,6 +6,8 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Window;
 import java.awt.image.BufferedImage;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.Date;
@@ -28,45 +30,9 @@ public class Main {
 		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		window.setSize(500, 500);
 		
-		NoiseGenerator generator = new NoiseGenerator(14573, window.getSize().width, window.getSize().height);
+		NoiseGenerator generator = new NoiseGenerator(rand.nextInt(), window.getSize().width, window.getSize().height);
 		image = perlinNoise.Image
 				.RenderImage(NoiseInterpreter.GetGradientMap(generator.generatePerlinNoise(8), Color.white, Color.black));
-		
-		JLabel generateButton = new JLabel("Generate New");
-		generateButton.addMouseListener(new MouseListener() {
-			
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				// TODO Auto-generated method stub
-				generator.setSeed(rand.nextInt());
-				image = perlinNoise.Image
-						.RenderImage(NoiseInterpreter.GetGradientMap(generator.generatePerlinNoise(8), Color.white, Color.black));
-			}
-
-			@Override
-			public void mouseEntered(MouseEvent e) {
-				// TODO Auto-generated method stub
-				
-			}
-
-			@Override
-			public void mouseExited(MouseEvent e) {
-				// TODO Auto-generated method stub
-				
-			}
-
-			@Override
-			public void mousePressed(MouseEvent e) {
-				// TODO Auto-generated method stub
-				
-			}
-
-			@Override
-			public void mouseReleased(MouseEvent e) {
-				// TODO Auto-generated method stub
-				
-			}
-		});
 		
 		JPanel panel = new JPanel(new BorderLayout()) {
 			@Override
@@ -78,8 +44,60 @@ public class Main {
 		};
 		panel.setPreferredSize(window.getSize());
 		
+		panel.addMouseListener(new MouseListener() {
+			
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				panel.repaint();
+			}
+			
+			@Override
+			public void mousePressed(MouseEvent e) {
+				generator.setSeed(rand.nextInt());
+				image = perlinNoise.Image
+						.RenderImage(NoiseInterpreter.GetGradientMap(generator.generatePerlinNoise(6), Color.white, Color.black));				
+			}
+			
+			@Override
+			public void mouseExited(MouseEvent e) {				
+			}
+			
+			@Override
+			public void mouseEntered(MouseEvent e) {
+			}
+			
+			@Override
+			public void mouseClicked(MouseEvent e) {
+			}
+		});
+		
+		window.addComponentListener(new ComponentListener() {
+			
+			@Override
+			public void componentShown(ComponentEvent e) {
+			}
+			
+			@Override
+			public void componentResized(ComponentEvent e) {
+				// TODO Optimize
+//				panel.setPreferredSize(window.getSize());
+//				generator.setDimensions(window.getSize());
+//				image = perlinNoise.Image
+//						.RenderImage(NoiseInterpreter.GetGradientMap(generator.generatePerlinNoise(6), Color.white, Color.black));
+//				panel.repaint();
+//				window.validate();
+			}
+			
+			@Override
+			public void componentMoved(ComponentEvent e) {
+			}
+			
+			@Override
+			public void componentHidden(ComponentEvent e) {
+			}
+		});
+		
 		window.getContentPane().add(panel);
-		//window.getContentPane().add(generateButton);
 		window.pack();
 		window.setVisible(true);
 	}
