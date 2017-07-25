@@ -21,15 +21,20 @@ import java.util.Random;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JColorChooser;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
+import javax.swing.colorchooser.AbstractColorChooserPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -47,9 +52,6 @@ public class Window {
 	private String windowName;
 	private int windowWidth = 1200;
 	private int windowHeight = 1000;
-	
-	private Color gradientStart = Color.white;
-	private Color gradientEnd = Color.black;
 	
 	public Window(String windowName) {
 		this.windowName = windowName;
@@ -76,23 +78,9 @@ public class Window {
 		image = perlinNoise.Image
 				.RenderImage(NoiseInterpreter
 						.GetGradientMap(generator
-								.generatePerlinNoise(generator.getSettings().getOctaves()), gradientStart, gradientEnd));
+								.generatePerlinNoise(generator.getSettings().getOctaves()), Color.white, Color.black));
 		
-//		Color[] colorarr = new Color[5];
-//		colorarr[0] = Color.white;
-//		colorarr[1] = Color.lightGray;
-//		colorarr[2] = Color.green;
-//		colorarr[3] = Color.cyan;
-//		colorarr[4] = Color.black;
-//		float[] cutoffs = new float[4];
-//		cutoffs[0] = 0.23f;
-//		cutoffs[1] = 0.44f;
-//		cutoffs[2] = 0.60f;
-//		cutoffs[3] = 0.78f;
-//		image = perlinNoise.Image
-//				.RenderImage(NoiseInterpreter.GetColorMap(generator.generatePerlinNoise(8), colorarr, cutoffs));
-		
-		JPanel panel = new JPanel() {
+		JPanel panel = new JPanel(new FlowLayout()) {
 			@Override
 			protected void paintComponent(Graphics g) {
 				Graphics2D g2d = (Graphics2D)g;
@@ -112,7 +100,7 @@ public class Window {
 			@Override
 			public void mousePressed(MouseEvent e) {
 				generator.setSeed(rand.nextLong());
-				generateNewImageGradient(Color.white, Color.black);
+				generateNewImageGradient(generator.getSettings().getGradientStart(), generator.getSettings().getGradientEnd());
 			}
 			
 			@Override
@@ -178,7 +166,7 @@ public class Window {
 		JFrame newFrame = new JFrame("Preferences");
 		final JPanel preferencesPanel = new JPanel();
 		final JTabbedPane preferences = new JTabbedPane();
-		preferences.setPreferredSize(new Dimension(350, 250));		
+		preferences.setPreferredSize(new Dimension(650, 600));		
 		final Settings newSettings = new Settings(generator.getSettings());
 		int min_octaves = 2;
 		int max_octaves = 12;
@@ -270,6 +258,40 @@ public class Window {
 			}
 		});
 		
+		JLabel gradStartLabel  = new JLabel("Gradient Start Color");
+		JColorChooser gradStart = new JColorChooser(newSettings.getGradientStart());
+		gradStart.setPreviewPanel(new JPanel());
+		AbstractColorChooserPanel[] panels = gradStart.getChooserPanels();
+        for (AbstractColorChooserPanel accp : panels) {
+            if (!accp.getDisplayName().equals("RGB") && !accp.getDisplayName().equals("Swatches")) {
+                gradStart.removeChooserPanel(accp);
+            }
+        }		
+		gradStart.getSelectionModel().addChangeListener(new ChangeListener() {			
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				newSettings.setGradientStart(gradStart.getColor());
+			}
+		});
+		
+		JLabel gradEndLabel  = new JLabel("Gradient End Color");
+		JColorChooser gradEnd = new JColorChooser(newSettings.getGradientEnd());
+		gradEnd.setPreviewPanel(new JPanel());
+		panels = gradEnd.getChooserPanels();
+        for (AbstractColorChooserPanel accp : panels) {
+            if (!accp.getDisplayName().equals("RGB") && !accp.getDisplayName().equals("Swatches")) {
+                gradEnd.removeChooserPanel(accp);
+            }
+        }
+		gradEnd.getSelectionModel().addChangeListener(new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				newSettings.setGradientEnd(gradEnd.getColor());				
+			}
+		});
+		
+		
+		
 		JButton apply = new JButton("Apply");
 		apply.addMouseListener(new MouseListener() {
 			
@@ -284,7 +306,7 @@ public class Window {
 				// TODO Auto-generated method stub
 				generator.changeSettings(newSettings);
 				newFrame.setVisible(false);
-				generateNewImageGradient(Color.white, Color.black);
+				generateNewImageGradient(newSettings.getGradientStart(), newSettings.getGradientEnd());
 				window.repaint();
 			}
 			
@@ -309,11 +331,18 @@ public class Window {
 		JPanel seedTab = new JPanel();
 		seedTab.add(seed);
 		
+		JPanel colorTab = new JPanel();
+		colorTab.add(gradStartLabel);
+		colorTab.add(gradStart);
+		colorTab.add(gradEndLabel);
+		colorTab.add(gradEnd);
+		
 		preferences.addTab("Seed", seedTab);
 		preferences.addTab("Width", width);
 		preferences.addTab("Height", height);
 		preferences.addTab("Octaves", octaves);
 		preferences.addTab("Persistance", persistance);
+		preferences.addTab("Colors", colorTab);
 				
 		preferencesPanel.setPreferredSize(
 				new Dimension(preferences.getPreferredSize().width, preferences.getPreferredSize().height + 40));
@@ -332,4 +361,17 @@ public class Window {
 								.generatePerlinNoise(generator.getSettings().getOctaves()), c1, c2));	
 	}
 	
+//	Color[] colorarr = new Color[5];
+//	colorarr[0] = Color.white;
+//	colorarr[1] = Color.lightGray;
+//	colorarr[2] = Color.green;
+//	colorarr[3] = Color.cyan;
+//	colorarr[4] = Color.black;
+//	float[] cutoffs = new float[4];
+//	cutoffs[0] = 0.23f;
+//	cutoffs[1] = 0.44f;
+//	cutoffs[2] = 0.60f;
+//	cutoffs[3] = 0.78f;
+//	image = perlinNoise.Image
+//			.RenderImage(NoiseInterpreter.GetColorMap(generator.generatePerlinNoise(8), colorarr, cutoffs));
 }

@@ -16,7 +16,7 @@ public class Main {
 			e.printStackTrace();
 		}
 		window.Window window = new Window("Perlin Noise Generator");
-		window.setDimensions(800, 500);
+		window.setDimensions(800, 800);
 		window.init();
 	}
 }
