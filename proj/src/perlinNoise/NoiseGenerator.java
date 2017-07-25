@@ -11,8 +11,10 @@ public class NoiseGenerator {
 	 * @param height The desired height of the array.
 	 */
 	public NoiseGenerator(long seed, int width, int height) {
-		if (width <= 0) width = 100;
-		if (height <= 0) height = 100;
+		width = width <= 0 ? width : 100;
+		width = width > 500 ? width : 500;
+		height = height <= 0 ? height: 100;
+		height = height > 500 ? height : 500;
 		
 		settings = new Settings();		
 		settings.setSeed(seed);

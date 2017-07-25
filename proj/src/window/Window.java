@@ -49,6 +49,7 @@ public class Window {
 	private static NoiseGenerator generator;
 	private JFrame window;
 	private JMenuBar menuBar;
+	private JPanel imagePanel;
 	private String windowName;
 	private int windowWidth = 1200;
 	private int windowHeight = 1000;
@@ -72,15 +73,17 @@ public class Window {
 		window = new JFrame(windowName); 
 		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		window.setSize(windowWidth, windowHeight);
+		window.setResizable(false);
 		initMenu();
 		
-		generator = new NoiseGenerator(rand.nextLong(), windowWidth / 4, windowHeight / 4);
+		generator = new NoiseGenerator(rand.nextLong(), 430, 500);
 		image = perlinNoise.Image
 				.RenderImage(NoiseInterpreter
 						.GetGradientMap(generator
 								.generatePerlinNoise(generator.getSettings().getOctaves()), Color.white, Color.black));
 		
-		JPanel panel = new JPanel(new FlowLayout()) {
+		JPanel panel = new JPanel();
+		imagePanel = new JPanel(new BorderLayout()) {
 			@Override
 			protected void paintComponent(Graphics g) {
 				Graphics2D g2d = (Graphics2D)g;
@@ -89,7 +92,8 @@ public class Window {
 			}
 		};
 		
-		panel.setPreferredSize(window.getSize());		
+		panel.setPreferredSize(window.getSize());
+		imagePanel.setPreferredSize(generator.getDimensions());
 		generate.addMouseListener(new MouseListener() {
 			
 			@Override
@@ -100,7 +104,7 @@ public class Window {
 			@Override
 			public void mousePressed(MouseEvent e) {
 				generator.setSeed(rand.nextLong());
-				generateNewImageGradient(generator.getSettings().getGradientStart(), generator.getSettings().getGradientEnd());
+				generateNewImageGradient(generator.getSettings().getGradientStart(), generator.getSettings().getGradientEnd());				
 			}
 			
 			@Override
@@ -116,6 +120,7 @@ public class Window {
 			}
 		});
 
+		panel.add(imagePanel);
 		panel.add(generate);
 		window.getContentPane().add(panel);
 		window.pack();
@@ -358,7 +363,9 @@ public class Window {
 		image = perlinNoise.Image
 				.RenderImage(NoiseInterpreter
 						.GetGradientMap(generator
-								.generatePerlinNoise(generator.getSettings().getOctaves()), c1, c2));	
+								.generatePerlinNoise(generator.getSettings().getOctaves()), c1, c2));		
+		imagePanel.setPreferredSize(generator.getDimensions());
+		window.validate();
 	}
 	
 //	Color[] colorarr = new Color[5];
