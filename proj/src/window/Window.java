@@ -5,8 +5,11 @@ import java.awt.CardLayout;
 import java.awt.Choice;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -29,6 +32,8 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import perlinNoise.NoiseGenerator;
 import perlinNoise.NoiseInterpreter;
@@ -50,8 +55,18 @@ public class Window {
 		this.windowName = windowName;
 	}
 	
+	public void setDimensions(int width, int height) {
+		windowWidth = width;
+		windowHeight = height;
+	}
+	
+	public void setDimensions(Dimension d) {
+		setDimensions(d.height, d.width);
+	}
+	
 	public void init() {
 		Random rand = new Random(new Date().getTime());
+		JButton generate = new JButton("Generate");
 		window = new JFrame(windowName); 
 		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		window.setSize(windowWidth, windowHeight);
@@ -77,7 +92,7 @@ public class Window {
 //		image = perlinNoise.Image
 //				.RenderImage(NoiseInterpreter.GetColorMap(generator.generatePerlinNoise(8), colorarr, cutoffs));
 		
-		JPanel panel = new JPanel(new BorderLayout()) {
+		JPanel panel = new JPanel() {
 			@Override
 			protected void paintComponent(Graphics g) {
 				Graphics2D g2d = (Graphics2D)g;
@@ -85,9 +100,9 @@ public class Window {
 				g2d.drawImage(image, 0, 0, this);				
 			}
 		};
-		panel.setPreferredSize(window.getSize());
 		
-		panel.addMouseListener(new MouseListener() {
+		panel.setPreferredSize(window.getSize());		
+		generate.addMouseListener(new MouseListener() {
 			
 			@Override
 			public void mouseReleased(MouseEvent e) {
@@ -97,10 +112,7 @@ public class Window {
 			@Override
 			public void mousePressed(MouseEvent e) {
 				generator.setSeed(rand.nextLong());
-				image = perlinNoise.Image
-						.RenderImage(NoiseInterpreter
-								.GetGradientMap(generator
-										.generatePerlinNoise(generator.getSettings().getOctaves()), Color.white, Color.black));				
+				generateNewImageGradient(Color.white, Color.black);
 			}
 			
 			@Override
@@ -116,9 +128,8 @@ public class Window {
 			}
 		});
 
-		
+		panel.add(generate);
 		window.getContentPane().add(panel);
-		//showPreferences();
 		window.pack();
 		window.setVisible(true);
 	}
@@ -128,7 +139,6 @@ public class Window {
 		menuBar = new JMenuBar();
 		JMenu prefs = new JMenu("Preferences");
 		menuBar.add(prefs);
-		menuBar.add(Box.createRigidArea(new Dimension(window.getWidth(), 25))); // Sets menu bar to specific height
 		
 		JMenuItem params = new JMenuItem("Noise Parameters");
 		params.addMouseListener(new MouseListener() {
@@ -166,12 +176,13 @@ public class Window {
 	
 	private void showPreferences() {
 		JFrame newFrame = new JFrame("Preferences");
+		final JPanel preferencesPanel = new JPanel();
 		final JTabbedPane preferences = new JTabbedPane();
 		preferences.setPreferredSize(new Dimension(350, 250));		
-		final Settings newSettings = new Settings();
+		final Settings newSettings = new Settings(generator.getSettings());
 		int min_octaves = 2;
 		int max_octaves = 12;
-		int init_octaves = 8;
+		int init_octaves = newSettings.getOctaves();
 		
 		JSlider octaves = new JSlider(JSlider.HORIZONTAL, min_octaves, max_octaves, init_octaves);
 		octaves.setMajorTickSpacing(2);
@@ -188,10 +199,15 @@ public class Window {
 		
 		int min_width = 150;
 		int max_width = 500;
-		int init_width = 300;
+		int init_width = newSettings.getArrWidth();
+		if (init_width < min_width) init_width = min_width;
+		if (init_width > max_width) init_width = max_width;
+		
 		int min_height = min_width;
 		int max_height = max_width;
-		int init_height = init_width;
+		int init_height = newSettings.getArrHeight();
+		if (init_height < min_height) init_height = min_height;
+		if (init_height > max_height) init_height = max_height;
 		
 		JSlider width = new JSlider(JSlider.HORIZONTAL, min_width, max_width, init_width);
 		width.setMajorTickSpacing(50);
@@ -220,7 +236,7 @@ public class Window {
 		
 		int min_persist = 0;
 		int max_persist = 100;
-		int init_persist = 50;
+		int init_persist = (int)(newSettings.getPersistance() * 100);
 		
 		JSlider persistance = new JSlider(JSlider.HORIZONTAL, min_persist, max_persist, init_persist);
 		persistance.setMajorTickSpacing(50);
@@ -236,12 +252,21 @@ public class Window {
 		});
 	
 		JTextField seed = new JTextField(16);
-		seed.addActionListener(new ActionListener() {			
+		seed.setText(String.valueOf(newSettings.getSeed()));
+		seed.getDocument().addDocumentListener(new DocumentListener() {
+			
 			@Override
-			public void actionPerformed(ActionEvent e) {
-				JTextField field = (JTextField)e.getSource();		
-				long seed = Long.parseLong(field.getText());
-				newSettings.setSeed(seed);
+			public void removeUpdate(DocumentEvent e) {
+			}
+			
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+			}
+			
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				long seedNum = Long.parseLong(seed.getText());
+				newSettings.setSeed(seedNum);
 			}
 		});
 		
@@ -259,7 +284,8 @@ public class Window {
 				// TODO Auto-generated method stub
 				generator.changeSettings(newSettings);
 				newFrame.setVisible(false);
-				//window.repaint();
+				generateNewImageGradient(Color.white, Color.black);
+				window.repaint();
 			}
 			
 			@Override
@@ -280,36 +306,30 @@ public class Window {
 			}
 		});
 		
-		JPanel octavesTab = new JPanel();
-		JPanel widthTab = new JPanel();
-		JPanel heightTab = new JPanel();
-		JPanel persistTab = new JPanel();
 		JPanel seedTab = new JPanel();
-		
-		octavesTab.add(octaves);
-		octavesTab.add(apply);
-		
-		widthTab.add(width);
-		widthTab.add(apply);
-		
-		heightTab.add(height);
-		heightTab.add(apply);
-		
-		persistTab.add(persistance);
-		persistTab.add(apply);
-		
 		seedTab.add(seed);
-		seedTab.add(apply);
 		
 		preferences.addTab("Seed", seedTab);
 		preferences.addTab("Width", width);
-		preferences.addTab("Height", heightTab);
-		preferences.addTab("Octaves", octavesTab);
-		preferences.addTab("Persistance", persistTab);
+		preferences.addTab("Height", height);
+		preferences.addTab("Octaves", octaves);
+		preferences.addTab("Persistance", persistance);
 				
-		newFrame.getContentPane().add(preferences);
+		preferencesPanel.setPreferredSize(
+				new Dimension(preferences.getPreferredSize().width, preferences.getPreferredSize().height + 40));
+		preferencesPanel.add(preferences);
+		preferencesPanel.add(apply);
+		
+		newFrame.getContentPane().add(preferencesPanel);
 		newFrame.pack();
 		newFrame.setVisible(true);
+	}
+	
+	private void generateNewImageGradient(Color c1, Color c2) {
+		image = perlinNoise.Image
+				.RenderImage(NoiseInterpreter
+						.GetGradientMap(generator
+								.generatePerlinNoise(generator.getSettings().getOctaves()), c1, c2));	
 	}
 	
 }

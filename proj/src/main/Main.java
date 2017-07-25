@@ -13,10 +13,10 @@ public class Main {
 			        UIManager.getSystemLookAndFeelClassName());
 		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
 				| UnsupportedLookAndFeelException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		window.Window window = new Window("Perlin Noise Generator");
+		window.setDimensions(800, 500);
 		window.init();
 	}
 }
