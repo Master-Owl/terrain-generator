@@ -1,4 +1,4 @@
-package window;
+package perlinNoise;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;

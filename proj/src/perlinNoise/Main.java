@@ -1,12 +1,9 @@
-package main;
+package perlinNoise;
 
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
-import window.Window;
-
 public class Main {
-
 	public static void main(String[] args) {
         try {
 			UIManager.setLookAndFeel(
@@ -15,7 +12,7 @@ public class Main {
 				| UnsupportedLookAndFeelException e) {
 			e.printStackTrace();
 		}
-		window.Window window = new Window("Perlin Noise Generator");
+		Window window = new Window("Perlin Noise Generator");
 		window.setDimensions(550, 560);
 		window.init();
 	}
