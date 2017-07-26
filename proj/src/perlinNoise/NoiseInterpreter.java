@@ -50,11 +50,10 @@ public class NoiseInterpreter {
 	
 	private static Color getGradientColor(Color gradientStart, Color gradientEnd, float value) {
 		float inverse = 1 - value;
-		Color c = new Color(
+		return new Color(
 				(int)(gradientStart.getRed() * inverse + gradientEnd.getRed() * value),
 				(int)(gradientStart.getGreen() * inverse + gradientEnd.getGreen() * value),
-				(int)(gradientStart.getBlue() * inverse + gradientEnd.getBlue() * value));		
-		return c;
+				(int)(gradientStart.getBlue() * inverse + gradientEnd.getBlue() * value));
 	}
 	
 	private static Color getMapColor(Color[] colors, float[] cutoffs, float val) {
