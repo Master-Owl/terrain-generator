@@ -28,10 +28,6 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import perlinNoise.NoiseGenerator;
-import perlinNoise.NoiseInterpreter;
-import perlinNoise.Settings;
-
 public class Window {
 	private static BufferedImage image;
 	private static NoiseGenerator generator;
@@ -72,7 +68,6 @@ public class Window {
 		
 		JPanel panel = new JPanel();
 		imagePanel = new JPanel(new BorderLayout()) {
-			@Override
 			protected void paintComponent(Graphics g) {
 				Graphics2D g2d = (Graphics2D)g;
 				g2d.clearRect(0, 0, getWidth(), getHeight());
@@ -84,26 +79,23 @@ public class Window {
 		imagePanel.setPreferredSize(generator.getDimensions());
 		generate.addMouseListener(new MouseListener() {
 			
-			@Override
 			public void mouseReleased(MouseEvent e) {
 				panel.repaint();
 			}
 			
-			@Override
 			public void mousePressed(MouseEvent e) {
 				generator.setSeed(rand.nextLong());
 				generateNewImageGradient(generator.getSettings().getGradientStart(), generator.getSettings().getGradientEnd());				
 			}
 			
-			@Override
+			
 			public void mouseExited(MouseEvent e) {				
 			}
 			
-			@Override
+			
 			public void mouseEntered(MouseEvent e) {
 			}
-			
-			@Override
+
 			public void mouseClicked(MouseEvent e) {
 			}
 		});
@@ -123,31 +115,26 @@ public class Window {
 		
 		JMenuItem params = new JMenuItem("Noise Parameters");
 		params.addMouseListener(new MouseListener() {
-			
-			@Override
+
 			public void mouseReleased(MouseEvent e) {
 				// TODO Auto-generated method stub
-				
+
 			}
-			
-			@Override
+
 			public void mousePressed(MouseEvent e) {
 				showPreferences();
 			}
-			
-			@Override
+
 			public void mouseExited(MouseEvent e) {
 				// TODO Auto-generated method stub
-				
+
 			}
-			
-			@Override
+
 			public void mouseEntered(MouseEvent e) {
 				// TODO Auto-generated method stub
-				
+
 			}
-			
-			@Override
+
 			public void mouseClicked(MouseEvent e) {
 			}
 		});
@@ -171,7 +158,7 @@ public class Window {
 		octaves.setPaintLabels(true);
 		octaves.setPaintTicks(true);
 		octaves.addChangeListener(new ChangeListener() {			
-			@Override
+
 			public void stateChanged(ChangeEvent e) {
 				JSlider slider = (JSlider)e.getSource();
 				newSettings.setOctaves(slider.getValue());
@@ -196,7 +183,7 @@ public class Window {
 		width.setPaintLabels(true);
 		width.setPaintTicks(true);
 		width.addChangeListener(new ChangeListener() {			
-			@Override
+
 			public void stateChanged(ChangeEvent e) {
 				JSlider slider = (JSlider)e.getSource();
 				newSettings.setArrWidth(slider.getValue());
@@ -208,7 +195,7 @@ public class Window {
 		height.setPaintLabels(true);
 		height.setPaintTicks(true);
 		height.addChangeListener(new ChangeListener() {			
-			@Override
+
 			public void stateChanged(ChangeEvent e) {
 				JSlider slider = (JSlider)e.getSource();
 				newSettings.setArrHeight(slider.getValue());
@@ -224,8 +211,7 @@ public class Window {
 		persistance.setMinorTickSpacing(10);
 		persistance.setPaintLabels(true);
 		persistance.setPaintTicks(true);
-		persistance.addChangeListener(new ChangeListener() {			
-			@Override
+		persistance.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
 				JSlider slider = (JSlider)e.getSource();
 				newSettings.setPersistance((float)(slider.getValue() / 100.0f));
@@ -235,16 +221,13 @@ public class Window {
 		JTextField seed = new JTextField(16);
 		seed.setText(String.valueOf(newSettings.getSeed()));
 		seed.getDocument().addDocumentListener(new DocumentListener() {
-			
-			@Override
+
 			public void removeUpdate(DocumentEvent e) {
 			}
-			
-			@Override
+
 			public void insertUpdate(DocumentEvent e) {
 			}
-			
-			@Override
+
 			public void changedUpdate(DocumentEvent e) {
 				long seedNum = Long.parseLong(seed.getText());
 				newSettings.setSeed(seedNum);
@@ -261,7 +244,7 @@ public class Window {
             }
         }		
 		gradStart.getSelectionModel().addChangeListener(new ChangeListener() {			
-			@Override
+
 			public void stateChanged(ChangeEvent e) {
 				newSettings.setGradientStart(gradStart.getColor());
 			}
@@ -277,7 +260,7 @@ public class Window {
             }
         }
 		gradEnd.getSelectionModel().addChangeListener(new ChangeListener() {
-			@Override
+
 			public void stateChanged(ChangeEvent e) {
 				newSettings.setGradientEnd(gradEnd.getColor());				
 			}
@@ -287,14 +270,12 @@ public class Window {
 		
 		JButton apply = new JButton("Apply");
 		apply.addMouseListener(new MouseListener() {
-			
-			@Override
+
 			public void mouseReleased(MouseEvent e) {
 				// TODO Auto-generated method stub
 				
 			}
-			
-			@Override
+
 			public void mousePressed(MouseEvent e) {
 				// TODO Auto-generated method stub
 				generator.changeSettings(newSettings);
@@ -302,20 +283,17 @@ public class Window {
 				generateNewImageGradient(newSettings.getGradientStart(), newSettings.getGradientEnd());
 				window.repaint();
 			}
-			
-			@Override
+
 			public void mouseExited(MouseEvent e) {
 				// TODO Auto-generated method stub
 				
 			}
-			
-			@Override
+
 			public void mouseEntered(MouseEvent e) {
 				// TODO Auto-generated method stub
 				
 			}
-			
-			@Override
+
 			public void mouseClicked(MouseEvent e) {
 
 			}
