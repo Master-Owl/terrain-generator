@@ -4,6 +4,8 @@ import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
 
+import java.awt.Color;
+
 import static org.lwjgl.glfw.GLFW.GLFW_CONTEXT_VERSION_MAJOR;
 import static org.lwjgl.glfw.GLFW.GLFW_CONTEXT_VERSION_MINOR;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE;
@@ -70,6 +72,9 @@ public class Window {
 
     glfwWindowHint(GLFW_VISIBLE, GL_FALSE); // the window will stay hidden after creation
     glfwWindowHint(GLFW_RESIZABLE, GL_TRUE); // the window will be resizable
+
+    // This will make the program use the highest OpenGL version possible
+    // between 3.2 and 4.1. If those lines are not included, a Legacy version of OpenGL is used.
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -101,7 +106,7 @@ public class Window {
     });
 
     // Resize callback
-    glfwSetFramebufferSizeCallback(windowHandle, (window, width, weight) -> {
+    glfwSetFramebufferSizeCallback(windowHandle, (window, width, height) -> {
       this.width = width;
       this.height = height;
       this.setResized(true);
@@ -131,6 +136,11 @@ public class Window {
 
   public void setClearColor(float r, float g, float b, float alpha) {
     glClearColor(r, g, b, alpha);
+  }
+
+  public void setClearColor(int rgb){
+    Color c = new Color(rgb);
+    glClearColor(c.getRed(), c.getGreen(), c.getBlue(), c.getAlpha());
   }
 
   public boolean windowShouldClose() {
