@@ -7,5 +7,19 @@
     </content>
     <orderEntry type="jdk" jdkName="1.8" jdkType="JavaSDK" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="LWJGL" level="project" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="file://$MODULE_DIR$/../../LWJGL" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES>
+          <root url="file://$MODULE_DIR$/../../LWJGL" />
+        </SOURCES>
+        <jarDirectory url="file://$MODULE_DIR$/../../LWJGL" recursive="false" />
+        <jarDirectory url="file://$MODULE_DIR$/../../LWJGL" recursive="false" type="SOURCES" />
+      </library>
+    </orderEntry>
   </component>
 </module>
