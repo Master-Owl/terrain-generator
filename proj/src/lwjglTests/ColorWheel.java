@@ -141,9 +141,9 @@ public class ColorWheel {
     public int getColorInt(){
         int BASE = 16;
         int total = 0;
-        
+
         for (int x = 0; x < 6; ++x)
-            total += hex[5 - x] * Math.pow(BASE, x);
+            total += valueOf(hex[5 - x]) * Math.pow(BASE, x);
 
         return total;
     }

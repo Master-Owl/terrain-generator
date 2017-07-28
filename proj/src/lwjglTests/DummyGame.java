@@ -1,5 +1,8 @@
 package lwjglTests;
 
+import lwjglTests.states.ColorState;
+import lwjglTests.states.IColorState;
+
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_DOWN;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_LEFT;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_LEFT_SHIFT;
@@ -14,6 +17,7 @@ public class DummyGame implements IGameLogic {
     private float red;
     private float green;
     private float blue;
+    private IColorState colorState;
 
     private enum Key {UP, DOWN, RIGHT, LEFT, SPACE, SHIFT, NONE}
 
@@ -21,6 +25,7 @@ public class DummyGame implements IGameLogic {
 
     public DummyGame() {
         renderer = new Renderer();
+        colorState = new ColorState();
         key = Key.NONE;
     }
 
@@ -35,7 +40,7 @@ public class DummyGame implements IGameLogic {
         else if (window.keyIsPressed(GLFW_KEY_DOWN)) key = Key.DOWN;
         else if (window.keyIsPressed(GLFW_KEY_RIGHT)) key = Key.RIGHT;
         else if (window.keyIsPressed(GLFW_KEY_LEFT)) key = Key.LEFT;
-        else if (window.keyIsPressed(GLFW_KEY_LEFT_SHIFT | GLFW_KEY_RIGHT_SHIFT)) key = Key.SHIFT;
+        else if (window.keyIsPressed(GLFW_KEY_LEFT_SHIFT | GLFW_KEY_RIGHT_SHIFT)) key = Key.SHIFT; // ?
         else if (window.keyIsPressed(GLFW_KEY_SPACE)) key = Key.SPACE;
         else key = Key.NONE;
     }
@@ -48,8 +53,10 @@ public class DummyGame implements IGameLogic {
             case UP:
                 break;
             case RIGHT:
+                colorState = colorState.moveRight(1);
                 break;
             case LEFT:
+                colorState = colorState.moveLeft(1);
                 break;
             case SPACE:
                 break;
@@ -70,4 +77,7 @@ public class DummyGame implements IGameLogic {
 
         renderer.clear();
     }
+
+
+
 }
