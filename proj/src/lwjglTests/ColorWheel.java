@@ -134,16 +134,16 @@ public class ColorWheel {
         }
     }
 
-    public String getHexString(){
-        return String.copyValueOf(hex);
+    public char[] getHex(){
+        return hex;
     }
 
-    public int getColorInt(){
+    public int getColorInt(char[] hexColors){
         int BASE = 16;
         int total = 0;
 
         for (int x = 0; x < 6; ++x)
-            total += valueOf(hex[5 - x]) * Math.pow(BASE, x);
+            total += valueOf(hexColors[5 - x]) * Math.pow(BASE, x);
 
         return total;
     }

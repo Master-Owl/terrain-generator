@@ -8,11 +8,15 @@ public class GreenState extends ColorState {
 
     @Override
     public IColorState moveLeft(int amount) {
-        return null;
+        colorWheel.incRed(amount);
+        colorWheel.decBlue(amount);
+        return determineColor(colorWheel.getHex());
     }
 
     @Override
     public IColorState moveRight(int amount) {
-        return null;
+        colorWheel.incBlue(amount);
+        colorWheel.decRed(amount);
+        return determineColor(colorWheel.getHex());
     }
 }

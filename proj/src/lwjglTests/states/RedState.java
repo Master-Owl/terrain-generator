@@ -1,6 +1,5 @@
 package lwjglTests.states;
 
-
 public class RedState extends ColorState {
 
     public RedState(){
@@ -9,11 +8,15 @@ public class RedState extends ColorState {
 
     @Override
     public IColorState moveLeft(int amount) {
-        return null;
+        colorWheel.incBlue(amount);
+        colorWheel.decGreen(amount);
+        return determineColor(colorWheel.getHex());
     }
 
     @Override
     public IColorState moveRight(int amount) {
-        return null;
+        colorWheel.incGreen(amount);
+        colorWheel.decBlue(amount);
+        return determineColor(colorWheel.getHex());
     }
 }
