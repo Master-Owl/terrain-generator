@@ -4,8 +4,8 @@ package lwjglTests;
 public class ColorWheel {
     public ColorWheel() {
         hex = new char[6];
-        hex[0] = '0';
-        hex[1] = '0';
+        hex[0] = 'f';
+        hex[1] = 'f';
         hex[2] = '0';
         hex[3] = '0';
         hex[4] = '0';
@@ -138,19 +138,41 @@ public class ColorWheel {
         return hex;
     }
 
+    public int getRed() {
+        char[] red = new char[2];
+        red[0] = hex[0];
+        red[1] = hex[1];
+        return getColorInt(red);
+    }
+
+    public int getGreen() {
+        char[] green = new char[2];
+        green[0] = hex[2];
+        green[1] = hex[3];
+        return getColorInt(green);
+    }
+
+    public int getBlue() {
+        char[] blue = new char[2];
+        blue[0] = hex[4];
+        blue[1] = hex[5];
+        return getColorInt(blue);
+    }
+
     public int getColorInt(char[] hexColors){
         int BASE = 16;
         int total = 0;
 
-        for (int x = 0; x < 6; ++x)
-            total += valueOf(hexColors[5 - x]) * Math.pow(BASE, x);
+        for (int x = 0; x < hexColors.length; ++x)
+            total += valueOf(hexColors[(hexColors.length - 1) - x]) * Math.pow(BASE, x);
 
         return total;
     }
 
     private int valueOf(char c){
-        if ((int)c >= 0 && (int)c < 10)
-            return (int)c;
+        int num = Character.getNumericValue(c);
+        if (num >= 0 && num < 10)
+            return num;
         if (c == 'a') return 10;
         if (c == 'b') return 11;
         if (c == 'c') return 12;
@@ -161,8 +183,8 @@ public class ColorWheel {
     }
 
     private char incHex(char hex){
-        int num = (int)hex;
-        if (num >= 0 && num <= 8) return (char)(num + 1);
+        int num = Character.getNumericValue(hex);
+        if (num >= 0 && num <= 8) return digitToChar(num + 1);
         if (num ==  9)  return 'a';
         if (hex == 'a') return 'b';
         if (hex == 'b') return 'c';
@@ -174,9 +196,8 @@ public class ColorWheel {
     }
 
     private char decHex(char hex){
-        int num = (int)hex;
-        if (num > 0 && num <= 9) return (char)(num - 1);
-        if (num == 0) return '0';
+        int num = Character.getNumericValue(hex);
+        if (num > 0 && num <= 9) return digitToChar(num - 1);
         if (hex == 'a') return '9';
         if (hex == 'b') return 'a';
         if (hex == 'c') return 'b';
@@ -184,5 +205,21 @@ public class ColorWheel {
         if (hex == 'e') return 'd';
         if (hex == 'f') return 'e';
         return '0';
+    }
+
+    private char digitToChar(int num){
+        switch(num){
+            case 0: return '0';
+            case 1: return '1';
+            case 2: return '2';
+            case 3: return '3';
+            case 4: return '4';
+            case 5: return '5';
+            case 6: return '6';
+            case 7: return '7';
+            case 8: return '8';
+            case 9: return '9';
+            default: return '0';
+        }
     }
 }

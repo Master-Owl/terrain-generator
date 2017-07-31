@@ -135,12 +135,12 @@ public class Window {
   }
 
   public void setClearColor(float r, float g, float b, float alpha) {
-    glClearColor(r, g, b, alpha);
+    glClearColor(r / 255f, g / 255f, b / 255f, alpha);
   }
 
   public void setClearColor(int rgb){
     Color c = new Color(rgb);
-    glClearColor(c.getRed(), c.getGreen(), c.getBlue(), c.getAlpha());
+    glClearColor(c.getRed() / 255f, c.getGreen() / 255f, c.getBlue() / 255f, c.getAlpha());
   }
 
   public boolean windowShouldClose() {

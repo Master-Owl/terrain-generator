@@ -2,6 +2,7 @@ package lwjglTests;
 
 import lwjglTests.states.ColorState;
 import lwjglTests.states.IColorState;
+import lwjglTests.states.RedState;
 
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_DOWN;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_LEFT;
@@ -14,9 +15,6 @@ import static org.lwjgl.opengl.GL11.glViewport;
 
 public class DummyGame implements IGameLogic {
     private final Renderer renderer;
-    private float red;
-    private float green;
-    private float blue;
     private IColorState colorState;
 
     private enum Key {UP, DOWN, RIGHT, LEFT, SPACE, SHIFT, NONE}
@@ -25,7 +23,7 @@ public class DummyGame implements IGameLogic {
 
     public DummyGame() {
         renderer = new Renderer();
-        colorState = new ColorState();
+        colorState = new RedState(new ColorWheel());
         key = Key.NONE;
     }
 
@@ -53,14 +51,16 @@ public class DummyGame implements IGameLogic {
             case UP:
                 break;
             case RIGHT:
-                colorState = colorState.moveRight(1);
+                colorState = colorState.moveRight((int)interval);
                 break;
             case LEFT:
-                colorState = colorState.moveLeft(1);
+                colorState = colorState.moveLeft((int)interval);
                 break;
             case SPACE:
+                colorState = colorState.lighten((int)interval);
                 break;
             case SHIFT:
+                colorState = colorState.darken((int)interval);
                 break;
             default:
                 break;
@@ -74,6 +74,13 @@ public class DummyGame implements IGameLogic {
             glViewport(0, 0, window.getWidth(), window.getHeight());
             window.setResized(false);
         }
+
+        colorState = colorState.moveRight(1);
+        //char[] hexColors = colorState.getColorWheel().getHex();
+        window.setClearColor(
+                colorState.getColorWheel().getRed(),
+                colorState.getColorWheel().getGreen(),
+                colorState.getColorWheel().getBlue(), 255);
 
         renderer.clear();
     }

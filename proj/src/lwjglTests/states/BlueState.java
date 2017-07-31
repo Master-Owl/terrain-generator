@@ -1,22 +1,36 @@
 package lwjglTests.states;
 
 
+import lwjglTests.ColorWheel;
+
 public class BlueState extends ColorState {
-    public BlueState() {
-        super();
+    public BlueState(ColorWheel cw) {
+        super(cw);
     }
 
     @Override
     public IColorState moveLeft(int amount) {
-        colorWheel.incGreen(amount);
-        colorWheel.decRed(amount);
-        return determineColor(colorWheel.getHex());
+        if (colorWheel.getRed() > colorWheel.getGreen())
+            colorWheel.decRed(amount);
+        else
+            colorWheel.incGreen(amount);
+
+        if (colorWheel.getBlue() == colorWheel.getGreen())
+            return new GreenState(colorWheel);
+
+        return this;
     }
 
     @Override
     public IColorState moveRight(int amount) {
-        colorWheel.incRed(amount);
-        colorWheel.decGreen(amount);
-        return determineColor(colorWheel.getHex());
+        if (colorWheel.getGreen() > colorWheel.getRed())
+            colorWheel.decGreen(amount);
+        else
+            colorWheel.incRed(amount);
+
+        if (colorWheel.getBlue() == colorWheel.getRed())
+            return new RedState(colorWheel);
+
+        return this;
     }
 }

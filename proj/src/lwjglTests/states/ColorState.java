@@ -8,8 +8,8 @@ import lwjglTests.ColorWheel;
 public class ColorState implements IColorState {
     protected ColorWheel colorWheel;
 
-    public ColorState(){
-        colorWheel = new ColorWheel();
+    public ColorState(ColorWheel colorWheel){
+        this.colorWheel = colorWheel;
     }
 
     public ColorWheel getColorWheel() { return colorWheel; }
@@ -34,12 +34,16 @@ public class ColorState implements IColorState {
                 greenVal == blueVal ||
                 blueVal == redVal;
 
+        if (redVal > greenVal && redVal > blueVal)   return new RedState(colorWheel);
+        if (greenVal > redVal && greenVal > blueVal) return new GreenState(colorWheel);
+        if (blueVal > redVal && blueVal > redVal)    return new BlueState(colorWheel);
+
         if (equalVals) return this;
 
         TreeMap<Integer, ColorState> orderedColors = new TreeMap<>();
-        orderedColors.put(redVal, new RedState());
-        orderedColors.put(greenVal, new GreenState());
-        orderedColors.put(blueVal, new BlueState());
+        orderedColors.put(redVal, new RedState(colorWheel));
+        orderedColors.put(greenVal, new GreenState(colorWheel));
+        orderedColors.put(blueVal, new BlueState(colorWheel));
 
         // This will return whichever state has the highest color value
         return orderedColors.lastEntry().getValue();
@@ -67,11 +71,17 @@ public class ColorState implements IColorState {
 
     @Override
     public IColorState lighten(int amount) {
+        colorWheel.incRed(amount);
+        colorWheel.incGreen(amount);
+        colorWheel.incBlue(amount);
         return this;
     }
 
     @Override
     public IColorState darken(int amount) {
+        colorWheel.decRed(amount);
+        colorWheel.decGreen(amount);
+        colorWheel.decBlue(amount);
         return this;
     }
 }

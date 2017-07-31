@@ -39,7 +39,6 @@ public class GameEngine implements Runnable {
       accumulator += elapsedTime;
 
       input();
-
       while (accumulator >= interval){
         update(interval);
         accumulator -= interval;
