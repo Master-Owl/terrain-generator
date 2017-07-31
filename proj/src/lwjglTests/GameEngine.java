@@ -40,7 +40,7 @@ public class GameEngine implements Runnable {
 
       input();
       while (accumulator >= interval){
-        update(interval);
+        update(5);
         accumulator -= interval;
       }
 

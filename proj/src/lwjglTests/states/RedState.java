@@ -10,6 +10,10 @@ public class RedState extends ColorState {
 
     @Override
     public IColorState moveLeft(int amount) {
+        if (colorWheel.getRed() < colorWheel.getGreen() &&
+            colorWheel.getRed() < colorWheel.getBlue())
+            return new BlueState(colorWheel);
+
         if (colorWheel.getGreen() > colorWheel.getBlue())
             colorWheel.decGreen(amount);
         else
@@ -23,6 +27,10 @@ public class RedState extends ColorState {
 
     @Override
     public IColorState moveRight(int amount) {
+        if (colorWheel.getRed() < colorWheel.getGreen() &&
+            colorWheel.getRed() < colorWheel.getBlue())
+            return new GreenState(colorWheel);
+
         if (colorWheel.getBlue() > colorWheel.getGreen())
             colorWheel.decBlue(amount);
         else
@@ -31,6 +39,18 @@ public class RedState extends ColorState {
         if (colorWheel.getRed() == colorWheel.getGreen())
             return new GreenState(colorWheel);
 
+        return this;
+    }
+
+    @Override
+    public IColorState moveUp(int amount) {
+        colorWheel.incRed(amount);
+        return this;
+    }
+
+    @Override
+    public IColorState moveDown(int amount) {
+        colorWheel.decRed(amount);
         return this;
     }
 }

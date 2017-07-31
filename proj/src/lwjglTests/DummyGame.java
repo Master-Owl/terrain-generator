@@ -38,17 +38,21 @@ public class DummyGame implements IGameLogic {
         else if (window.keyIsPressed(GLFW_KEY_DOWN)) key = Key.DOWN;
         else if (window.keyIsPressed(GLFW_KEY_RIGHT)) key = Key.RIGHT;
         else if (window.keyIsPressed(GLFW_KEY_LEFT)) key = Key.LEFT;
-        else if (window.keyIsPressed(GLFW_KEY_LEFT_SHIFT | GLFW_KEY_RIGHT_SHIFT)) key = Key.SHIFT; // ?
+        else if (window.keyIsPressed(GLFW_KEY_LEFT_SHIFT)) key = Key.SHIFT;
+        else if (window.keyIsPressed(GLFW_KEY_RIGHT_SHIFT)) key = Key.SHIFT;
         else if (window.keyIsPressed(GLFW_KEY_SPACE)) key = Key.SPACE;
         else key = Key.NONE;
     }
 
     @Override
     public void update(float interval) {
+        if (interval < 1f) interval = 1f;
         switch(key){
             case DOWN:
+                colorState = colorState.moveDown((int)interval);
                 break;
             case UP:
+                colorState = colorState.moveUp((int)interval);
                 break;
             case RIGHT:
                 colorState = colorState.moveRight((int)interval);
@@ -75,12 +79,8 @@ public class DummyGame implements IGameLogic {
             window.setResized(false);
         }
 
-        colorState = colorState.moveRight(1);
-        //char[] hexColors = colorState.getColorWheel().getHex();
-        window.setClearColor(
-                colorState.getColorWheel().getRed(),
-                colorState.getColorWheel().getGreen(),
-                colorState.getColorWheel().getBlue(), 255);
+        char[] hexColors = colorState.getColorWheel().getHex();
+        window.setClearColor(colorState.getColorWheel().getColorInt(hexColors));
 
         renderer.clear();
     }
