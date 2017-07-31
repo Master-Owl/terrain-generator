@@ -1,6 +1,6 @@
 package lwjglTests;
 
-import lwjglTests.states.ColorState;
+
 import lwjglTests.states.IColorState;
 import lwjglTests.states.RedState;
 
@@ -50,26 +50,31 @@ public class DummyGame implements IGameLogic {
         switch(key){
             case DOWN:
                 colorState = colorState.moveDown((int)interval);
+                System.out.println(colorState.toString());
                 break;
             case UP:
                 colorState = colorState.moveUp((int)interval);
+                System.out.println(colorState.toString());
                 break;
             case RIGHT:
                 colorState = colorState.moveRight((int)interval);
+                System.out.println(colorState.toString());
                 break;
             case LEFT:
                 colorState = colorState.moveLeft((int)interval);
+                System.out.println(colorState.toString());
                 break;
             case SPACE:
                 colorState = colorState.lighten((int)interval);
+                System.out.println(colorState.toString());
                 break;
             case SHIFT:
                 colorState = colorState.darken((int)interval);
+                System.out.println(colorState.toString());
                 break;
             default:
                 break;
         }
-
     }
 
     @Override
