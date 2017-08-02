@@ -21,5 +21,6 @@
         <jarDirectory url="file://$MODULE_DIR$/../../LWJGL" recursive="false" type="SOURCES" />
       </library>
     </orderEntry>
+    <orderEntry type="library" name="lwjgl-assimp-javadoc" level="project" />
   </component>
 </module>
