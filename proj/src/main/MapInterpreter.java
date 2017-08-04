@@ -10,11 +10,11 @@ public class MapInterpreter {
     // All levels are from range 0.0f to 1.0f
 
     // Elevation cut-offs
-    private static final float SEA_LEVEL      = 0.20f;
+    private static final float SEA_LEVEL      = 0.17f;
     private static final float LOW_LEVEL      = 0.25f;
     private static final float VALLEY_LEVEL   = 0.40f;
     private static final float AVERAGE_LEVEL  = 0.55f;
-    private static final float HILL_LEVEL     = 0.65f;
+    private static final float HILL_LEVEL     = 0.70f;
     private static final float MOUNTAIN_LEVEL = 0.90f;
 
     // Moisture cut-offs
@@ -45,7 +45,7 @@ public class MapInterpreter {
                             case DRY:
                                 return Biome.TUNDRA;
                             default:
-                                return Biome.TAIGA;
+                                return Biome.BEACH;
                         }
                     default:
                         return Biome.BEACH;
@@ -54,6 +54,7 @@ public class MapInterpreter {
             case VALLEY:
                 switch(GetTemperature(temperature)){
                     case FREEZING:
+                        return Biome.TUNDRA;
                     case COLD:
                         switch(GetMoisture(moisture)){
                             case BARE:
@@ -168,7 +169,7 @@ public class MapInterpreter {
                             case BARE:
                             case DRY:
                             case TEMPERATE:
-                                return Biome.TAIGA;
+                                return Biome.TUNDRA;
                             default:
                                 return Biome.SNOW;
                         }
@@ -192,7 +193,7 @@ public class MapInterpreter {
                         switch(GetMoisture(moisture)){
                             case BARE:
                             case DRY:
-                                return Biome.CRAG;
+                                return Biome.DESERT;
                             case TEMPERATE:
                             case MOIST:
                                 return Biome.FOREST;
@@ -203,7 +204,7 @@ public class MapInterpreter {
                         switch(GetMoisture(moisture)){
                             case BARE:
                             case DRY:
-                                return Biome.CRAG;
+                                return Biome.SCORCHED_DESERT;
                             case TEMPERATE:
                                 return Biome.FOREST;
                             default:
@@ -238,7 +239,13 @@ public class MapInterpreter {
                                 return Biome.SNOW;
                         }
                     default:
-                        return Biome.CRAG;
+                        switch(GetMoisture(moisture)){
+                            case BARE:
+                            case DRY:
+                                return Biome.CRAG;
+                            default:
+                                return Biome.FOREST;
+                        }
                 }
 
             case PEAK:
@@ -248,7 +255,13 @@ public class MapInterpreter {
                     case AVERAGE:
                         return Biome.SNOW;
                     default:
-                        return Biome.CRAG;
+                        switch(GetMoisture(moisture)){
+                            case BARE:
+                            case DRY:
+                                return Biome.CRAG;
+                            default:
+                                return Biome.FOREST;
+                        }
                 }
         }
 

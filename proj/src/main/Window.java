@@ -8,6 +8,8 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
@@ -15,6 +17,8 @@ import java.net.URL;
 import java.util.Date;
 import java.util.Random;
 
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -22,6 +26,7 @@ import javax.swing.JPanel;
 import main.enums.Biome;
 import perlinNoise.NoiseGenerator;
 import perlinNoise.NoiseInterpreter;
+import perlinNoise.Settings;
 
 public class Window {
     private JFrame window;
@@ -42,6 +47,7 @@ public class Window {
     private JPanel MoisturePanel;
     private JPanel TemperaturePanel;
 
+    private JButton regenerate;
     private static JLabel BiomeLabel;
     private NoiseGenerator generator;
 
@@ -50,7 +56,11 @@ public class Window {
         this.window_width = width;
         this.window_height = height;
         this.rand = new Random(new Date().getTime());
-        generator = new NoiseGenerator(rand.nextLong(), width / 3, height - (height / 4));
+        generator = new NoiseGenerator(0, width / 3, height - (height / 4));
+        Settings s = generator.getSettings();
+        s.setOctaves(9);
+        s.setPersistance(0.7f);
+        generator.changeSettings(s);
     }
 
     public void init(){
@@ -58,7 +68,18 @@ public class Window {
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         window.setSize(1200, 500);
         BiomeLabel = new JLabel("BIOME: ");
-        BiomeLabel.setPreferredSize(new Dimension(150, 30));
+        BiomeLabel.setPreferredSize(new Dimension(150, 40));
+        regenerate = new JButton("Regenerate");
+
+        regenerate.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                generate();
+                ElevationPanel.repaint();
+                TemperaturePanel.repaint();
+                MoisturePanel.repaint();
+            }
+        });
 
         Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
         window.setBounds(
@@ -66,22 +87,7 @@ public class Window {
                 screenSize.height / 2 - (window_height / 2),
                 window_width, window_height);
 
-        ElevationNoise = generator.generatePerlinNoise(generator.getSettings().getOctaves());
-        ElevationMap = perlinNoise.Image
-                        .RenderImage(NoiseInterpreter
-                                .GetGradientMap(ElevationNoise, Color.white, Color.black));
-
-        generator.setSeed(rand.nextLong());
-        MoistureNoise = generator.generatePerlinNoise(generator.getSettings().getOctaves());
-        MoistureMap = perlinNoise.Image
-                        .RenderImage(NoiseInterpreter
-                                .GetGradientMap(MoistureNoise, Color.blue, Color.black));
-
-        generator.setSeed(rand.nextLong());
-        TemperatureNoise = generator.generatePerlinNoise(generator.getSettings().getOctaves());
-        TemperatureMap = perlinNoise.Image
-                            .RenderImage(NoiseInterpreter
-                                    .GetGradientMap(TemperatureNoise, Color.red, Color.cyan));
+        generate();
 
         ElevationPanel = new JPanel(new BorderLayout()) {
             protected void paintComponent(Graphics g) {
@@ -103,26 +109,6 @@ public class Window {
         });
         ElevationPanel.setPreferredSize(generator.getDimensions());
 
-        MoisturePanel = new JPanel(new BorderLayout()) {
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2d = (Graphics2D)g;
-                g2d.clearRect(0, 0, getWidth(), getHeight());
-                g2d.drawImage(MoistureMap, 0, 0, this);
-            }
-        };
-        MoisturePanel.addMouseMotionListener(new MouseMotionListener() {
-            @Override
-            public void mouseDragged(MouseEvent e) {
-
-            }
-
-            @Override
-            public void mouseMoved(MouseEvent e) {
-                changeBiomeLabel(e);
-            }
-        });
-        MoisturePanel.setPreferredSize(generator.getDimensions());
-
         TemperaturePanel = new JPanel(new BorderLayout()) {
             protected void paintComponent(Graphics g) {
                 Graphics2D g2d = (Graphics2D)g;
@@ -143,16 +129,67 @@ public class Window {
         });
         TemperaturePanel.setPreferredSize(generator.getDimensions());
 
-        window.setLayout(new FlowLayout());
-        window.getContentPane().add(ElevationPanel);
-        window.getContentPane().add(MoisturePanel);
-        window.getContentPane().add(TemperaturePanel);
-        window.getContentPane().add(BiomeLabel);
+        MoisturePanel = new JPanel(new BorderLayout()) {
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2d = (Graphics2D)g;
+                g2d.clearRect(0, 0, getWidth(), getHeight());
+                g2d.drawImage(MoistureMap, 0, 0, this);
+            }
+        };
+        MoisturePanel.addMouseMotionListener(new MouseMotionListener() {
+            @Override
+            public void mouseDragged(MouseEvent e) {
+
+            }
+
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                changeBiomeLabel(e);
+            }
+        });
+        MoisturePanel.setPreferredSize(generator.getDimensions());
+
+        JPanel all     = new JPanel();
+        JPanel content = new JPanel(new FlowLayout());
+        JPanel info    = new JPanel(new FlowLayout());
+        all.setLayout(new BoxLayout(all, BoxLayout.Y_AXIS));
+
+        content.add(ElevationPanel);
+        content.add(TemperaturePanel);
+        content.add(MoisturePanel);
+        info.add(regenerate);
+        info.add(BiomeLabel);
+        all.add(content);
+        all.add(info);
+
+        window.getContentPane().add(all);
         window.pack();
     }
 
     public void show(){
         window.setVisible(true);
+    }
+
+    private void generate(){
+        generator.setSeed(rand.nextLong());
+        ElevationNoise = generator.generatePerlinNoise(generator.getSettings().getOctaves());
+        ElevationMap = perlinNoise.Image
+                .RenderImage(NoiseInterpreter
+                        .GetGradientMap(ElevationNoise, Color.white, Color.black));
+
+        generator.setSeed(rand.nextLong());
+        TemperatureNoise = generator.generatePerlinNoise(generator.getSettings().getOctaves());
+        TemperatureMap = perlinNoise.Image
+                .RenderImage(NoiseInterpreter
+                        .GetGradientMap(TemperatureNoise, Color.red, Color.cyan));
+
+        generator.setSeed(rand.nextLong());
+        MoistureNoise = generator.generatePerlinNoise(generator.getSettings().getOctaves());
+        MoistureMap = perlinNoise.Image
+                .RenderImage(NoiseInterpreter
+                        .GetGradientMap(MoistureNoise, Color.blue, Color.black));
+
+        window.validate();
     }
 
     private String determineBiome(Biome b){
@@ -199,7 +236,7 @@ public class Window {
         int y = e.getY();
         BiomeLabel.setText("Biome: "
                 + determineBiome(MapInterpreter
-                .GetBiome(ElevationNoise[x][y], MoistureNoise[x][y], TemperatureNoise[x][y])));
+                .GetBiome(ElevationNoise[x][y], TemperatureNoise[x][y], MoistureNoise[x][y])));
         window.validate();
     }
 }
