@@ -34,16 +34,20 @@ public class Window {
     private int window_height;
 
     private float[][] ElevationNoise;
-    private float[][] MoistureNoise;
     private float[][] TemperatureNoise;
+    private float[][] MoistureNoise;
 
     private BufferedImage ElevationMap;
-    private BufferedImage MoistureMap;
     private BufferedImage TemperatureMap;
+    private BufferedImage MoistureMap;
 
     private JPanel ElevationPanel;
-    private JPanel MoisturePanel;
     private JPanel TemperaturePanel;
+    private JPanel MoisturePanel;
+
+    private NoiseParameters ElevationParams;
+    private NoiseParameters TemperatureParams;
+    private NoiseParameters MoistureParams;
 
     private JButton regenerate;
     private static JLabel BiomeLabel;
@@ -55,10 +59,6 @@ public class Window {
         this.window_height = height;
         this.rand = new Random(new Date().getTime());
         generator = new NoiseGenerator(0, width / 3, height - (height / 4));
-        Settings s = generator.getSettings();
-        s.setOctaves(9);
-        s.setPersistance(0.7f);
-        generator.changeSettings(s);
     }
 
     public void init(){
@@ -84,6 +84,10 @@ public class Window {
                 screenSize.width / 2 - (window_width / 2),
                 screenSize.height / 2 - (window_height / 2),
                 window_width, window_height);
+
+        ElevationParams = new NoiseParameters(new Settings(generator.getSettings()));
+        TemperatureParams = new NoiseParameters(new Settings(generator.getSettings()));
+        MoistureParams = new NoiseParameters(new Settings(generator.getSettings()));
 
         generate();
 
@@ -147,17 +151,45 @@ public class Window {
         });
         MoisturePanel.setPreferredSize(generator.getDimensions());
 
-        JPanel all     = new JPanel();
-        JPanel content = new JPanel(new FlowLayout());
-        JPanel info    = new JPanel(new FlowLayout());
+        JButton elevParamsButton = new JButton("Elevation Parameters");
+        JButton tempParamsButton = new JButton("Temperature Parameters");
+        JButton moistParamsButton = new JButton("Moisture Parameters");
+
+        elevParamsButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                ElevationParams.setVisible(true);
+            }
+        });
+        tempParamsButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                TemperatureParams.setVisible(true);
+            }
+        });
+        moistParamsButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                MoistureParams.setVisible(true);
+            }
+        });
+
+        JPanel all          = new JPanel();
+        JPanel content      = new JPanel(new FlowLayout());
+        JPanel parameters   = new JPanel(new FlowLayout());
+        JPanel info         = new JPanel(new FlowLayout());
         all.setLayout(new BoxLayout(all, BoxLayout.Y_AXIS));
 
         content.add(ElevationPanel);
         content.add(TemperaturePanel);
         content.add(MoisturePanel);
+        parameters.add(elevParamsButton);
+        parameters.add(tempParamsButton);
+        parameters.add(moistParamsButton);
         info.add(regenerate);
         info.add(BiomeLabel);
         all.add(content);
+        all.add(parameters);
         all.add(info);
 
         window.getContentPane().add(all);
@@ -169,25 +201,26 @@ public class Window {
     }
 
     private void generate(){
+        generator.changeSettings(ElevationParams.getSettings());
         generator.setSeed(rand.nextLong());
         ElevationNoise = generator.generatePerlinNoise(generator.getSettings().getOctaves());
         ElevationMap = perlinNoise.Image
                 .RenderImage(NoiseInterpreter
                         .GetGradientMap(ElevationNoise, Color.white, Color.black));
 
+        generator.changeSettings(TemperatureParams.getSettings());
         generator.setSeed(rand.nextLong());
         TemperatureNoise = generator.generatePerlinNoise(generator.getSettings().getOctaves());
         TemperatureMap = perlinNoise.Image
                 .RenderImage(NoiseInterpreter
                         .GetGradientMap(TemperatureNoise, Color.red, Color.cyan));
 
+        generator.changeSettings(MoistureParams.getSettings());
         generator.setSeed(rand.nextLong());
         MoistureNoise = generator.generatePerlinNoise(generator.getSettings().getOctaves());
         MoistureMap = perlinNoise.Image
                 .RenderImage(NoiseInterpreter
                         .GetGradientMap(MoistureNoise, Color.blue, Color.black));
-
-        window.validate();
     }
 
     private String determineBiome(Biome b){
@@ -235,6 +268,5 @@ public class Window {
         BiomeLabel.setText("Biome: "
                 + determineBiome(MapInterpreter
                 .GetBiome(ElevationNoise[x][y], TemperatureNoise[x][y], MoistureNoise[x][y])));
-        window.validate();
     }
 }

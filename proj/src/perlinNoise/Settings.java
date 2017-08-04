@@ -39,7 +39,7 @@ public class Settings {
 		this.octaves = octaves;
 	}
 	
-	public float getPersistance() {
+	public float getPersistence() {
 		return persistance;
 	}
 

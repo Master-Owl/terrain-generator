@@ -204,7 +204,7 @@ public class Window {
 		
 		int min_persist = 0;
 		int max_persist = 100;
-		int init_persist = (int)(newSettings.getPersistance() * 100);
+		int init_persist = (int)(newSettings.getPersistence() * 100);
 		
 		JSlider persistance = new JSlider(JSlider.HORIZONTAL, min_persist, max_persist, init_persist);
 		persistance.setMajorTickSpacing(50);

@@ -152,7 +152,7 @@ public class NoiseGenerator {
 		int height = settings.getArrHeight();
 		
 		float[][][] smoothNoise = new float[octaveCount][width][height];
-		float persistance = settings.getPersistance();
+		float persistance = settings.getPersistence();
 		
 		// Generate the smooth noise for each octave
 		for (int i = 0; i < octaveCount; ++i) {
