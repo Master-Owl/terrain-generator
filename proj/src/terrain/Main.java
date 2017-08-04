@@ -1,4 +1,4 @@
-package main;
+package terrain;
 
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;

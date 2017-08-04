@@ -1,10 +1,10 @@
-package main;
+package terrain;
 
 
-import main.enums.Biome;
-import main.enums.Elevation;
-import main.enums.Moisture;
-import main.enums.Temperature;
+import terrain.enums.Biome;
+import terrain.enums.Elevation;
+import terrain.enums.Moisture;
+import terrain.enums.Temperature;
 
 public class MapInterpreter {
     // All levels are from range 0.0f to 1.0f

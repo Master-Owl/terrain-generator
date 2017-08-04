@@ -1,4 +1,4 @@
-package main.enums;
+package terrain.enums;
 
 
 public enum Biome {
