@@ -10,7 +10,7 @@ public class Main {
     try{
       boolean vSync = true;
       IGameLogic logic = new DummyGame();
-      GameEngine engine = new GameEngine("Color Gradient", 600, 480, vSync, logic);
+      GameEngine engine = new GameEngine("Perlin Noise + Color Gradient", 600, 480, vSync, logic);
       engine.start();
     } catch (Exception e){
       e.printStackTrace();
