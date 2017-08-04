@@ -10,26 +10,26 @@ public class MapInterpreter {
     // All levels are from range 0.0f to 1.0f
 
     // Elevation cut-offs
-    public static final float SEA_LEVEL      = 0.20f;
-    public static final float LOW_LEVEL      = 0.25f;
-    public static final float VALLEY_LEVEL   = 0.40f;
-    public static final float AVERAGE_LEVEL  = 0.55f;
-    public static final float HILL_LEVEL     = 0.65f;
-    public static final float MOUNTAIN_LEVEL = 0.90f;
+    private static final float SEA_LEVEL      = 0.20f;
+    private static final float LOW_LEVEL      = 0.25f;
+    private static final float VALLEY_LEVEL   = 0.40f;
+    private static final float AVERAGE_LEVEL  = 0.55f;
+    private static final float HILL_LEVEL     = 0.65f;
+    private static final float MOUNTAIN_LEVEL = 0.90f;
 
     // Moisture cut-offs
-    public static final float BARE      = 0.15f;
-    public static final float DRY       = 0.30f;
-    public static final float TEMPERATE = 0.55f;
-    public static final float MOIST     = 0.70f;
-    public static final float HUMID     = 0.85f;
+    private static final float BARE      = 0.15f;
+    private static final float DRY       = 0.30f;
+    private static final float TEMPERATE = 0.55f;
+    private static final float MOIST     = 0.70f;
+    private static final float HUMID     = 0.85f;
 
     // Temperature cut-offs
-    public static final float FREEZING  = 0.10f;
-    public static final float COLD      = 0.40f;
-    public static final float AVERAGE   = 0.65f;
-    public static final float WARM      = 0.75f;
-    public static final float HOT       = 0.90f;
+    private static final float FREEZING  = 0.10f;
+    private static final float COLD      = 0.40f;
+    private static final float AVERAGE   = 0.65f;
+    private static final float WARM      = 0.75f;
+    private static final float HOT       = 0.90f;
 
     public static Biome GetBiome(float elevation, float temperature, float moisture){
         switch(GetElevation(elevation)){
