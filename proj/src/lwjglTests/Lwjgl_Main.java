@@ -4,7 +4,7 @@ package lwjglTests;
     https://lwjglgamedev.gitbooks.io/3d-game-development-with-lwjgl/content/chapter2/chapter2.html
  */
 
-public class Main {
+public class Lwjgl_Main {
 
   public static void main(String[] args) {
     try{

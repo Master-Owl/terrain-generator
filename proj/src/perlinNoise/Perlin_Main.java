@@ -3,7 +3,7 @@ package perlinNoise;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
-public class Main {
+public class Perlin_Main {
 	public static void main(String[] args) {
         try {
 			UIManager.setLookAndFeel(

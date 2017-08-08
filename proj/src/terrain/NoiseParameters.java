@@ -20,6 +20,7 @@ public class NoiseParameters extends JFrame {
     private Settings settings;
     private JPanel contentPane;
     private JTabbedPane tabbedPane;
+    private Window window;
 
     private final int MIN_OCTAVES = 4;
     private final int MAX_OCTAVES = 12;
@@ -29,9 +30,10 @@ public class NoiseParameters extends JFrame {
     private int octavesSlider;
     private float persistenceSlider;
 
-    public NoiseParameters(Settings s){
+    public NoiseParameters(Settings s, Window w){
         super();
         settings = s;
+        window = w;
         octavesSlider = settings.getOctaves();
         persistenceSlider = settings.getPersistence();
         Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
@@ -78,6 +80,7 @@ public class NoiseParameters extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 settings.setOctaves(octavesSlider);
                 settings.setPersistance(persistenceSlider);
+                window.generate(true);
                 setVisible(false);
             }
         });
