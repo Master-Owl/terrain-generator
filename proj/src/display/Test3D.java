@@ -49,6 +49,7 @@ import javax.vecmath.Vector3f;
 
 import com.sun.j3d.utils.applet.MainFrame;
 import com.sun.j3d.utils.behaviors.mouse.MouseRotate;
+import com.sun.j3d.utils.behaviors.vp.OrbitBehavior;
 import com.sun.j3d.utils.geometry.Box;
 import com.sun.j3d.utils.geometry.ColorCube;
 import com.sun.j3d.utils.geometry.Cone;
@@ -338,18 +339,15 @@ public class Test3D extends Applet implements ActionListener, KeyListener, Mouse
 		box.getShape(Box.LEFT).setAppearance(getAppearance(new Color3f(Color.green)));
 		box.getShape(Box.BACK).setAppearance(getAppearance(new Color3f(Color.yellow)));	
 		
-		MouseRotate behavior = new MouseRotate();
+		OrbitBehavior behavior = new OrbitBehavior(canvas, OrbitBehavior.REVERSE_ROTATE);
 		BoundingSphere bounds = new BoundingSphere(new Point3d(0.0, 0.0, 0.0), 100.0);
 		objTrans = new TransformGroup();
-		objTrans.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
-		objTrans.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
-		behavior.setTransformGroup(objTrans);
-		objTrans.addChild(behavior);
 
 		behavior.setSchedulingBounds(bounds);
 		objTrans.addChild(box);
 		group.addChild(objTrans);
 		
+		universe.getViewingPlatform().setViewPlatformBehavior(behavior);
 		universe.getViewingPlatform().setNominalViewingTransform();
 		universe.addBranchGraph(group);
 	}
