@@ -333,6 +333,8 @@ public class Test3D extends Applet implements ActionListener, KeyListener, Mouse
 		objTrans = new TransformGroup();
 
 		behavior.setSchedulingBounds(bounds);
+		behavior.setRotXFactor(1);
+		behavior.setRotYFactor(1);
 		objTrans.addChild(box);
 		group.addChild(objTrans);
 
