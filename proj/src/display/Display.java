@@ -28,7 +28,7 @@ public class Display {
 	private static void plane(){
 		int size = 3 * (6);
 		boolean useWireframe = true;
-		NoiseGenerator gen = new NoiseGenerator(2240, size, size);
+		NoiseGenerator gen = new NoiseGenerator(42, size, size);
 		Color[][] colorMap = new Color[size][size];
 
 		for (int y = 0; y < size; ++y)
@@ -36,8 +36,8 @@ public class Display {
 				colorMap[y][x] = Color.red;
 		
 		PlaneDrawer pd = new PlaneDrawer(gen.generatePerlinNoise(8), colorMap);
-		pd.displayPlane(useWireframe);
+		pd.initPlane(useWireframe);
 		
-		new MainFrame(pd, 500, 500);
+		new MainFrame(pd, 1000, 1000);
 	}
 }
