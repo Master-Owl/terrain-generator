@@ -47,7 +47,7 @@ import com.sun.j3d.utils.image.TextureLoader;
 import com.sun.j3d.utils.universe.SimpleUniverse;
 
 @SuppressWarnings("serial")
-public class Test3D extends Applet implements ActionListener, KeyListener, MouseListener, MouseMotionListener {
+public class Test3D extends Applet {
 	private SimpleUniverse universe;
 	private BranchGroup group;
 	private Vector3f lightDir;
@@ -57,18 +57,7 @@ public class Test3D extends Applet implements ActionListener, KeyListener, Mouse
 	private Color3f white;
 	private Color3f red;
 
-	// Animation vars
-	private Button start = new Button("Go");
 	private TransformGroup objTrans;
-	private Transform3D trans = new Transform3D();
-	private float height = 0.0f;
-	private float sign = 1.0f; // going up or down
-	private Timer timer;
-	private float xloc = 0.0f;
-
-	// Rotation vars
-	private int x_pos;
-	private int y_pos;
 
 	public Test3D() {
 		lightDir = new Vector3f(4.0f, -7.0f, -12.0f);
@@ -78,8 +67,6 @@ public class Test3D extends Applet implements ActionListener, KeyListener, Mouse
 		green = new Color3f(0.0f, 0.65f, 0.1f);
 		red = new Color3f(1.0f, 0.0f, 0.2f);
 
-		x_pos = 0;
-		y_pos = 0;
 		objTrans = new TransformGroup();
 
 		setLocation(500, 500);
@@ -102,8 +89,15 @@ public class Test3D extends Applet implements ActionListener, KeyListener, Mouse
 	}
 
 	public void axis3D() {
+		setLayout(new BorderLayout());
+		
+		Canvas3D canvas = new Canvas3D(SimpleUniverse.getPreferredConfiguration());
+		add("Center", canvas);
+		
 		group = new BranchGroup();
-		universe = new SimpleUniverse();
+		BranchGroup group2 = new BranchGroup();
+		objTrans = new TransformGroup();
+		universe = new SimpleUniverse(canvas);
 
 		for (float x = -1.0f; x < 1.0f; x += 0.1f) {
 			Sphere s = new Sphere(0.05f);
@@ -115,7 +109,7 @@ public class Test3D extends Applet implements ActionListener, KeyListener, Mouse
 			transform.setTranslation(vect);
 			tg.setTransform(transform);
 			tg.addChild(s);
-			group.addChild(tg);
+			group2.addChild(tg);
 		}
 
 		for (float y = -1.0f; y < 1.0f; y += 0.1f) {
@@ -128,7 +122,7 @@ public class Test3D extends Applet implements ActionListener, KeyListener, Mouse
 			transform.setTranslation(vect);
 			tg.setTransform(transform);
 			tg.addChild(c);
-			group.addChild(tg);
+			group2.addChild(tg);
 		}
 
 		for (float z = -1.0f; z < 1.0f; z += 0.1f) {
@@ -141,16 +135,24 @@ public class Test3D extends Applet implements ActionListener, KeyListener, Mouse
 			transform.setTranslation(vect);
 			tg.setTransform(transform);
 			tg.addChild(c);
-			group.addChild(tg);
+			group2.addChild(tg);
 		}
 
-		Color3f light_1_color = new Color3f(0.1f, 1.4f, 0.7f);
-		DirectionalLight dl = new DirectionalLight(light_1_color, lightDir);
-
+		OrbitBehavior behavior = new OrbitBehavior(canvas, OrbitBehavior.REVERSE_ROTATE);				
+		DirectionalLight dl = new DirectionalLight(new Color3f(0.1f, 1.4f, 0.7f), lightDir);
 		BoundingSphere bounds = new BoundingSphere(new Point3d(0.0, 0.0, 0.0), 100.0);
+		
+		behavior.setSchedulingBounds(bounds);
+		behavior.setRotXFactor(1);
+		behavior.setRotYFactor(1);
+		
 		dl.setInfluencingBounds(bounds);
+		objTrans.addChild(group2);
 
 		group.addChild(dl);
+		group.addChild(objTrans);
+		
+		universe.getViewingPlatform().setViewPlatformBehavior(behavior);
 		universe.getViewingPlatform().setNominalViewingTransform();
 		universe.addBranchGraph(group);
 	}
@@ -204,96 +206,6 @@ public class Test3D extends Applet implements ActionListener, KeyListener, Mouse
 		universe.getViewingPlatform().setNominalViewingTransform();
 		universe.addBranchGraph(material());
 	}
-
-	// ---------------------------------------------
-	private BranchGroup setup() {
-		BranchGroup objRoot = new BranchGroup();
-		objTrans = new TransformGroup();
-		objTrans.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
-		objRoot.addChild(objTrans);
-
-		// Shape leaf node
-		Sphere s = new Sphere(0.25f);
-		objTrans = new TransformGroup();
-		objTrans.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
-		Transform3D position1 = new Transform3D();
-		position1.setTranslation(new Vector3f(0.0f, 0.0f, 0.0f));
-		objTrans.setTransform(position1);
-		objTrans.addChild(s);
-		objRoot.addChild(objTrans);
-
-		// Directional light
-		BoundingSphere bounds = new BoundingSphere(new Point3d(0.0, 0.0, 0.0), 100.0);
-		DirectionalLight dl = new DirectionalLight(red, lightDir);
-		dl.setInfluencingBounds(bounds);
-		objRoot.addChild(dl);
-
-		// Ambient light
-		AmbientLight ambientLightNode = new AmbientLight(white);
-		ambientLightNode.setInfluencingBounds(bounds);
-		objRoot.addChild(ambientLightNode);
-
-		return objRoot;
-	}
-
-	public void setupAnimation() {
-		setLayout(new BorderLayout());
-
-		GraphicsConfiguration config = SimpleUniverse.getPreferredConfiguration();
-		Canvas3D canvas = new Canvas3D(config);
-		add("Center", canvas);
-		canvas.addKeyListener(this);
-		timer = new Timer(100, this);
-		Panel panel = new Panel();
-		panel.add(start);
-
-		add("North", panel);
-		start.addActionListener(this);
-		start.addKeyListener(this);
-
-		BranchGroup scene = setup();
-		SimpleUniverse universe = new SimpleUniverse(canvas);
-
-		universe.getViewingPlatform().setNominalViewingTransform();
-		universe.addBranchGraph(scene);
-	}
-
-	@Override
-	public void keyPressed(KeyEvent e) {
-		if (e.getKeyChar() == 'd')
-			xloc += 0.1f;
-		if (e.getKeyChar() == 'a')
-			xloc -= 0.1f;
-	}
-
-	@Override
-	public void keyReleased(KeyEvent e) {
-	}
-
-	@Override
-	public void keyTyped(KeyEvent e) {
-	}
-
-	@Override
-	public void actionPerformed(ActionEvent e) {
-		if (e.getSource() == start) {
-			if (!timer.isRunning())
-				timer.start();
-		} else {
-			height += 0.1f * sign;
-
-			if (Math.abs(height * 2) >= 1)
-				sign = -1.0f * sign;
-			if (height < -0.4f)
-				trans.setScale(new Vector3d(1.0f, 0.8f, 1.0f));
-			else
-				trans.setScale(new Vector3d(1.0f, 1.0f, 1.0f));
-
-			trans.setTranslation(new Vector3f(xloc, height, 0.0f));
-			objTrans.setTransform(trans);
-		}
-	}
-
 	// ----------------------------------------------
 
 	// Rotation code snippet mostly taken from
@@ -361,60 +273,5 @@ public class Test3D extends Applet implements ActionListener, KeyListener, Mouse
 		ap.setColoringAttributes(ca);
 
 		return ap;
-	}
-
-	@Override
-	public void mouseClicked(MouseEvent e) {
-
-	}
-
-	@Override
-	public void mouseEntered(MouseEvent e) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void mouseExited(MouseEvent e) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void mousePressed(MouseEvent e) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void mouseReleased(MouseEvent e) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void mouseDragged(MouseEvent e) {
-
-		// Rotate a flat image
-		// int dx = e.getX() - x_pos;
-		// int dy = e.getY() - y_pos;
-		// x_pos = e.getX();
-		// y_pos = e.getY();
-		//
-		// double rotation = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
-		//
-		// Transform3D transform = new Transform3D();
-		// Matrix3d matrix = new Matrix3d();
-		// objTrans.getTransform(transform);
-		// transform.getRotationScale(matrix);
-		// transform.rotZ(rotation);
-		// objTrans.setTransform(transform);
-		//
-	}
-
-	@Override
-	public void mouseMoved(MouseEvent arg0) {
-		// TODO Auto-generated method stub
-
 	}
 }
