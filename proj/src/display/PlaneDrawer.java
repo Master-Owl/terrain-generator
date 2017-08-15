@@ -37,12 +37,15 @@ public class PlaneDrawer extends Applet {
 	private int height;
 	private float midY;
 
-	public PlaneDrawer(float[][] noiseMap, Color[][] colorMap) {
-		this.colorMap = colorMap;
+	public PlaneDrawer(float[][] noiseMap) {
 		this.noiseMap = noiseMap;
 		height = noiseMap.length;
 		width = noiseMap[0].length;
 		midY = 0.0f;
+	}
+	
+	public void setNoiseMap(float[][] noiseMap){
+		this.noiseMap = noiseMap;
 	}
 
 	public static Appearance createAppearance(boolean wireframe) {
@@ -61,26 +64,6 @@ public class PlaneDrawer extends Applet {
 		}
 
 		return ap;
-	}
-
-	public Vector3f normalize(Vector3f vect) {
-		return normalize(vect.getX(), vect.getY(), vect.getZ());
-	}
-
-	public Vector3f normalize(double x, double y, double z) {
-		double sum = x * x + y * y + z * z;
-		if (Math.abs(sum - 1.0) > 0.001) {
-			double root = Math.sqrt(sum) + 0.0000001;
-			x /= root;
-			y /= root;
-			z /= root;
-		}
-		Vector3f normal = new Vector3f();
-		normal.x = (float) x;
-		normal.y = (float) y;
-		normal.z = (float) z;
-
-		return normal;
 	}
 
 	private LineStripArray[] getMesh(float scaleHeight, float scaleLengthWidth) {
@@ -135,42 +118,28 @@ public class PlaneDrawer extends Applet {
 		return mesh;
 	}
 
-	public void initPlane(boolean useWireframe, float amplify) {
-		setLayout(new BorderLayout());
-
+	public void init(boolean useWireframe, float amplify){
+		removeAll();
+		setLayout(new BorderLayout());		
+		
 		GraphicsConfiguration config = SimpleUniverse.getPreferredConfiguration();
 		BranchGroup group = new BranchGroup();
 		BranchGroup group2 = new BranchGroup();
 		Canvas3D canvas = new Canvas3D(config);
 		SimpleUniverse u = new SimpleUniverse(canvas);
-
-		add("Center", canvas);
-		group2 = getAxisRef();
-
+		
 		float scale = 7.0f / ((width + height) / 2.0f); // The width and length
 														// will only go out to
 														// x=7 z=7, dividing by
 														// the avg of width &
 														// height (should be sqr
 														// anyway)
-		LineStripArray[] mesh = getMesh(amplify, scale);
-
-		float RATIO = -midY;
-
-		for (int i = 0; i < mesh.length; ++i) {
-			Shape3D meshLine = new Shape3D(mesh[i], createAppearance(useWireframe));
-
-			TransformGroup centerPlane = new TransformGroup();
-			Transform3D centerTrans = new Transform3D();
-			Vector3f centerVect = new Vector3f(-(width / height) * (width / 8.0f), RATIO, -(height / width) * (height / 8.0f));
-
-			centerTrans.setTranslation(centerVect);
-			centerPlane.setTransform(centerTrans);
-			centerPlane.addChild(meshLine);
-
-			group2.addChild(centerPlane);
-		}
-
+		
+		add("Center", canvas);
+		
+		if (useWireframe) group2 = getAxisRef();
+		initPlane(group2, amplify, scale);
+		
 		OrbitBehavior behavior = new OrbitBehavior(canvas, OrbitBehavior.REVERSE_ROTATE);
 		DirectionalLight dl = new DirectionalLight(new Color3f(Color.cyan), new Vector3f(4.0f, -7.0f, 12.0f));
 		BoundingSphere bounds = new BoundingSphere(new Point3d(0.0, 0.0, 0.0), 100.0);
@@ -190,6 +159,25 @@ public class PlaneDrawer extends Applet {
 		u.getViewingPlatform().setViewPlatformBehavior(behavior);
 		u.getViewingPlatform().getViewPlatformTransform().setTransform(initialView);
 		u.addBranchGraph(group);
+	}
+	
+	public void initPlane(BranchGroup group, float amplify, float scale) {
+		LineStripArray[] mesh = getMesh(amplify, scale);
+		float RATIO = -midY;
+
+		for (int i = 0; i < mesh.length; ++i) {
+			Shape3D meshLine = new Shape3D(mesh[i], createAppearance(true));
+
+			TransformGroup centerPlane = new TransformGroup();
+			Transform3D centerTrans = new Transform3D();
+			Vector3f centerVect = new Vector3f(-(width / height) * (width / 8.0f), RATIO, -(height / width) * (height / 8.0f));
+
+			centerTrans.setTranslation(centerVect);
+			centerPlane.setTransform(centerTrans);
+			centerPlane.addChild(meshLine);
+
+			group.addChild(centerPlane);
+		}
 	}
 
 	private BranchGroup getAxisRef() {

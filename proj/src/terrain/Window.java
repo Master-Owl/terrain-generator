@@ -21,12 +21,13 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import display.AppWindow;
 import terrain.enums.Biome;
 import perlinNoise.NoiseGenerator;
 import perlinNoise.NoiseInterpreter;
 import perlinNoise.Settings;
 
-public class Window {
+public class Window implements AppWindow{
     private JFrame window;
     private String windowName;
     private Random rand;
@@ -45,9 +46,9 @@ public class Window {
     private JPanel TemperaturePanel;
     private JPanel MoisturePanel;
 
-    private NoiseParameters ElevationParams;
-    private NoiseParameters TemperatureParams;
-    private NoiseParameters MoistureParams;
+    private SettingsWindow ElevationParams;
+    private SettingsWindow TemperatureParams;
+    private SettingsWindow MoistureParams;
 
     private JButton regenerate;
     private static JLabel BiomeLabel;
@@ -61,6 +62,7 @@ public class Window {
         generator = new NoiseGenerator(0, width / 3, height - (height / 4));
     }
 
+    @Override
     public void init(){
         window = new JFrame(windowName);
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -83,9 +85,9 @@ public class Window {
                 screenSize.height / 2 - (window_height / 2),
                 window_width, window_height);
 
-        ElevationParams = new NoiseParameters(new Settings(generator.getSettings()), this);
-        TemperatureParams = new NoiseParameters(new Settings(generator.getSettings()), this);
-        MoistureParams = new NoiseParameters(new Settings(generator.getSettings()), this);
+        ElevationParams = new SettingsWindow(new Settings(generator.getSettings()), this);
+        TemperatureParams = new SettingsWindow(new Settings(generator.getSettings()), this);
+        MoistureParams = new SettingsWindow(new Settings(generator.getSettings()), this);
 
         generate(false);
 
@@ -194,10 +196,12 @@ public class Window {
         window.pack();
     }
 
+    @Override
     public void show(){
         window.setVisible(true);
     }
 
+    @Override
     public void generate(boolean keepSeed){
         generator.changeSettings(ElevationParams.getSettings());
         if (!keepSeed)

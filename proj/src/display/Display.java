@@ -16,7 +16,8 @@ public class Display {
 		System.setProperty("sun.awt.noerasebackground", "true");
 
 //		test3DAxis();
-		plane();
+//		plane();
+		
 	}
 	
 	private static void test3DAxis(){
@@ -36,13 +37,9 @@ public class Display {
 		System.out.println("Seed: " + seed);
 		NoiseGenerator gen = new NoiseGenerator(seed, size, size);
 		Color[][] colorMap = new Color[size][size];
-
-		for (int y = 0; y < size; ++y)
-			for (int x = 0; x < size; ++x)
-				colorMap[y][x] = Color.red;
 		
-		PlaneDrawer pd = new PlaneDrawer(gen.generatePerlinNoise(8), colorMap);
-		pd.initPlane(useWireframe, amplify);
+		PlaneDrawer pd = new PlaneDrawer(gen.generatePerlinNoise(8));
+		pd.init(useWireframe, amplify);
 		
 		new MainFrame(pd, 1000, 1000);
 	}
