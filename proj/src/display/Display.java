@@ -26,7 +26,7 @@ public class Display {
 	}
 	
 	private static void plane(){
-		int size = 3 * (6);
+		int size = 20;
 		boolean useWireframe = true;
 		NoiseGenerator gen = new NoiseGenerator(42, size, size);
 		Color[][] colorMap = new Color[size][size];
