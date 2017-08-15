@@ -1,6 +1,7 @@
 package display;
 
 import java.awt.Color;
+import java.util.Random;
 
 import com.sun.j3d.utils.applet.MainFrame;
 
@@ -28,7 +29,11 @@ public class Display {
 	private static void plane(){
 		int size = 20;
 		boolean useWireframe = true;
-		NoiseGenerator gen = new NoiseGenerator(42, size, size);
+		Random rand = new Random();
+		long seed = rand.nextLong();
+		
+		System.out.println("Seed: " + seed);
+		NoiseGenerator gen = new NoiseGenerator(seed, size, size);
 		Color[][] colorMap = new Color[size][size];
 
 		for (int y = 0; y < size; ++y)

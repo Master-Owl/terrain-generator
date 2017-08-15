@@ -23,6 +23,7 @@ import javax.media.j3d.TriangleStripArray;
 import javax.vecmath.Color3f;
 import javax.vecmath.Point3d;
 import javax.vecmath.Point3f;
+import javax.vecmath.Vector3d;
 import javax.vecmath.Vector3f;
 
 import com.sun.j3d.utils.behaviors.vp.OrbitBehavior;
@@ -37,13 +38,14 @@ public class PlaneDrawer extends Applet {
 	private Color[][] colorMap;
 	private int width;
 	private int height;
-	private float maxY, minY;
+	private float midY;
 
 	public PlaneDrawer(float[][] noiseMap, Color[][] colorMap) {
 		this.colorMap = colorMap;
 		this.noiseMap = noiseMap;
 		height = noiseMap.length;
 		width = noiseMap[0].length;
+		midY = 0.0f;
 	}
 
 	public static Appearance createAppearance(boolean wireframe) {
@@ -83,44 +85,10 @@ public class PlaneDrawer extends Applet {
 
 		return normal;
 	}
-
-	public LineStripArray getMap(float amplify) {
-		amplify = amplify < 1.0f && amplify > -1.0f ? 1.0f : amplify;
-		maxY = 0.0f;
-		minY = amplify * 2;
-		
-		int numPoints = width * height;
-		Point3f[] coords = new Point3f[numPoints];
-		Color3f[] colors = new Color3f[numPoints];
-
-		for (int row = 0; row < height; ++row) {
-			for (int col = 0; col < width; ++col) {
-				Point3f coord = new Point3f();
-				Color c = colorMap[row][col];
-
-				coord.x = col / 5.0f;
-				coord.y = noiseMap[row][col] * amplify;
-				coord.z = row / 5.0f;
-
-				maxY = maxY > coord.y ? maxY : coord.y;
-				minY = minY < coord.y ? minY : coord.y;
-				
-				coords[(row * width) + col] = coord;
-				colors[(row * width) + col] = new Color3f(c);
-			}
-		}
-
-		LineStripArray plane = new LineStripArray(numPoints,
-				GeometryArray.COORDINATES | GeometryArray.COLOR_3 | GeometryArray.NORMALS,
-				new int[] { numPoints });
-		plane.setCoordinates(0, coords);
-		plane.setColors(0, colors);
-		
-		return plane;
-	}
 	
 	private LineStripArray[] getMesh(float scaleHeight, float scaleLengthWidth){
 		LineStripArray[] mesh = new LineStripArray[width + height];
+		boolean sameMid = false;
 		
 		// Row lines
 		for (int row = 0; row < height; ++row){
@@ -134,6 +102,8 @@ public class PlaneDrawer extends Applet {
 				vert.z = row * scaleLengthWidth;
 				
 				rowVertices[col] = vert;
+				
+				if (row == height / 2 && col == width / 2) midY = vert.y;
 			}
 			
 			mesh[row] = new LineStripArray(width,
@@ -154,6 +124,8 @@ public class PlaneDrawer extends Applet {
 				vert.z = row * scaleLengthWidth;
 				
 				colVertices[row] = vert;
+				
+				if (row == height / 2 && col == width / 2 && midY == vert.y) sameMid = true;
 			}
 			
 			mesh[height + col] = new LineStripArray(height,
@@ -161,6 +133,9 @@ public class PlaneDrawer extends Applet {
 					new int[] { height });
 			mesh[height + col].setCoordinates(0, colVertices);
 		}
+		
+		System.out.println("Same Mid: " + sameMid);
+		if (sameMid) System.out.println("   " + midY);
 		
 		return mesh;
 	}
@@ -175,21 +150,23 @@ public class PlaneDrawer extends Applet {
 		SimpleUniverse u = new SimpleUniverse(canvas);
 		
 		add("Center", canvas);
-		group2 = getAxisPoint();
+		group2 = getAxisRef();
 
 		float amplify = 25.0f;
-		float scale = 0.5f;
-		float RATIO = -0.7f;
-		int row = 0;
-		int col = 0;
+		float scale = 0.35f;
 		LineStripArray[] mesh = getMesh(amplify, scale);
+		
+		float RATIO = -midY;
 		
 		for (int i = 0; i < mesh.length; ++i){
 			Shape3D meshLine = new Shape3D(mesh[i], createAppearance(useWireframe));
 			
 			TransformGroup centerPlane = new TransformGroup();
 			Transform3D centerTrans = new Transform3D();
-			Vector3f centerVect = new Vector3f(-width / height * (width / 4.0f), amplify * RATIO, -height / width * (height / 4.0f));
+			Vector3f centerVect = new Vector3f(
+					-(width / height) * 4.0f,
+					RATIO,
+					-(height / width) * 4.0f);
 			
 			centerTrans.setTranslation(centerVect);
 			centerPlane.setTransform(centerTrans);
@@ -199,9 +176,10 @@ public class PlaneDrawer extends Applet {
 		}		
 		
 		OrbitBehavior behavior = new OrbitBehavior(canvas, OrbitBehavior.REVERSE_ROTATE);
-		DirectionalLight dl = new DirectionalLight(new Color3f(Color.cyan), new Vector3f(4.0f, -7.0f, -12.0f));
+		DirectionalLight dl = new DirectionalLight(new Color3f(Color.cyan), new Vector3f(4.0f, -7.0f, 12.0f));
 		BoundingSphere bounds = new BoundingSphere(new Point3d(0.0, 0.0, 0.0), 1000.0);
 		TransformGroup objTrans = new TransformGroup();
+		Transform3D initialView = lookTowardsOriginFrom(new Point3d(0.5, 0.75, -10.0));
 
 		dl.setInfluencingBounds(bounds);
 		objTrans.addChild(group2);
@@ -214,11 +192,11 @@ public class PlaneDrawer extends Applet {
 		group.addChild(objTrans);
 
 		u.getViewingPlatform().setViewPlatformBehavior(behavior);
-		u.getViewingPlatform().setNominalViewingTransform();
+		u.getViewingPlatform().getViewPlatformTransform().setTransform(initialView);
 		u.addBranchGraph(group);
 	}
 	
-	private BranchGroup getAxisPoint(){
+	private BranchGroup getAxisRef(){
 		BranchGroup group = new BranchGroup();
 		for (float x = -1.0f; x < 1.0f; x += 0.1f) {
 			Sphere s = new Sphere(0.05f);
@@ -261,4 +239,14 @@ public class PlaneDrawer extends Applet {
 		
 		return group;
 	}
+
+    private Transform3D lookTowardsOriginFrom(Point3d point)
+    {
+        Transform3D move = new Transform3D();
+        Vector3d up = new Vector3d(point.x, point.y + 1, point.z);
+        move.lookAt(point, new Point3d(0.0d, 0.0d, 0.0d), up);        
+    
+
+        return move;
+    }
 }
