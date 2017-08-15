@@ -128,15 +128,17 @@ public class PlaneDrawer extends Applet {
 		
 		add("Center", canvas);
 
-		float amplify = 1.0f;
+		float amplify = 30.0f;
+		float ratio = -0.7f;
+		
 		GeometryArray shape = getMap(amplify); // minY and maxY initialized here
 		Shape3D plane = new Shape3D(shape, createAppearance(useWireframe));
 		
-		float ratio = (float) -Math.pow(minY / maxY, 2);
+		
 		
 		System.out.println("Max Y: " + maxY);
 		System.out.println("Min Y: " + minY);
-		System.out.println("Ratio: " + ratio);
+		System.out.println("Amp * Ratio: " + (amplify * ratio));
 		
 		TransformGroup centerPlane = new TransformGroup();
 		Transform3D centerTrans = new Transform3D();
@@ -149,7 +151,7 @@ public class PlaneDrawer extends Applet {
 		group2 = getAxisPoint();
 		
 		OrbitBehavior behavior = new OrbitBehavior(canvas, OrbitBehavior.REVERSE_ROTATE);
-		DirectionalLight dl = new DirectionalLight(new Color3f(Color.yellow), new Vector3f(0.5f, -1.0f, -0.5f));
+		DirectionalLight dl = new DirectionalLight(new Color3f(Color.cyan), new Vector3f(4.0f, -7.0f, -12.0f));
 		BoundingSphere bounds = new BoundingSphere(new Point3d(0.0, 0.0, 0.0), 1000.0);
 		TransformGroup objTrans = new TransformGroup();
 
@@ -159,7 +161,7 @@ public class PlaneDrawer extends Applet {
 		
 		behavior.setSchedulingBounds(bounds);
 		behavior.setRotXFactor(1);
-		behavior.setRotYFactor(1);
+		behavior.setRotYFactor(0);
 		
 		group.addChild(dl);
 		group.addChild(objTrans);
