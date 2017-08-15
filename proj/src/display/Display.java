@@ -27,7 +27,8 @@ public class Display {
 	}
 	
 	private static void plane(){
-		int size = 20;
+		int size = 25;
+		float amplify = 25.0f;
 		boolean useWireframe = true;
 		Random rand = new Random();
 		long seed = rand.nextLong();
@@ -41,7 +42,7 @@ public class Display {
 				colorMap[y][x] = Color.red;
 		
 		PlaneDrawer pd = new PlaneDrawer(gen.generatePerlinNoise(8), colorMap);
-		pd.initPlane(useWireframe);
+		pd.initPlane(useWireframe, amplify);
 		
 		new MainFrame(pd, 1000, 1000);
 	}

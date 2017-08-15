@@ -18,8 +18,6 @@ import javax.media.j3d.QuadArray;
 import javax.media.j3d.Shape3D;
 import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
-import javax.media.j3d.TriangleArray;
-import javax.media.j3d.TriangleStripArray;
 import javax.vecmath.Color3f;
 import javax.vecmath.Point3d;
 import javax.vecmath.Point3f;
@@ -31,7 +29,6 @@ import com.sun.j3d.utils.geometry.Cone;
 import com.sun.j3d.utils.geometry.Cylinder;
 import com.sun.j3d.utils.geometry.Sphere;
 import com.sun.j3d.utils.universe.SimpleUniverse;
-
 
 public class PlaneDrawer extends Applet {
 	private float[][] noiseMap;
@@ -85,109 +82,108 @@ public class PlaneDrawer extends Applet {
 
 		return normal;
 	}
-	
-	private LineStripArray[] getMesh(float scaleHeight, float scaleLengthWidth){
+
+	private LineStripArray[] getMesh(float scaleHeight, float scaleLengthWidth) {
 		LineStripArray[] mesh = new LineStripArray[width + height];
 		boolean sameMid = false;
-		
+
 		// Row lines
-		for (int row = 0; row < height; ++row){
+		for (int row = 0; row < height; ++row) {
 			Point3f[] rowVertices = new Point3f[width];
-			
-			for (int col = 0; col < width; ++col){
+
+			for (int col = 0; col < width; ++col) {
 				Point3f vert = new Point3f();
-				
+
 				vert.x = col * scaleLengthWidth;
 				vert.y = noiseMap[row][col] * scaleHeight;
 				vert.z = row * scaleLengthWidth;
-				
+
 				rowVertices[col] = vert;
-				
-				if (row == height / 2 && col == width / 2) midY = vert.y;
+
+				if (row == height / 2 && col == width / 2)
+					midY = vert.y;
 			}
-			
-			mesh[row] = new LineStripArray(width,
-					GeometryArray.COORDINATES,
-					new int[] { width });
+
+			mesh[row] = new LineStripArray(width, GeometryArray.COORDINATES, new int[] { width });
 			mesh[row].setCoordinates(0, rowVertices);
 		}
-		
+
 		// Column lines
-		for (int col = 0; col < width; ++col){
+		for (int col = 0; col < width; ++col) {
 			Point3f[] colVertices = new Point3f[height];
-			
-			for (int row = 0; row < height; ++row){
+
+			for (int row = 0; row < height; ++row) {
 				Point3f vert = new Point3f();
-				
+
 				vert.x = col * scaleLengthWidth;
 				vert.y = noiseMap[row][col] * scaleHeight;
 				vert.z = row * scaleLengthWidth;
-				
+
 				colVertices[row] = vert;
-				
-				if (row == height / 2 && col == width / 2 && midY == vert.y) sameMid = true;
+
+				if (row == height / 2 && col == width / 2 && midY == vert.y)
+					sameMid = true;
 			}
-			
-			mesh[height + col] = new LineStripArray(height,
-					GeometryArray.COORDINATES,
-					new int[] { height });
+
+			mesh[height + col] = new LineStripArray(height, GeometryArray.COORDINATES, new int[] { height });
 			mesh[height + col].setCoordinates(0, colVertices);
 		}
-		
+
 		System.out.println("Same Mid: " + sameMid);
 		if (sameMid) System.out.println("   " + midY);
-		
+
 		return mesh;
 	}
 
-	public void initPlane(boolean useWireframe){
+	public void initPlane(boolean useWireframe, float amplify) {
 		setLayout(new BorderLayout());
-		
+
 		GraphicsConfiguration config = SimpleUniverse.getPreferredConfiguration();
 		BranchGroup group = new BranchGroup();
 		BranchGroup group2 = new BranchGroup();
 		Canvas3D canvas = new Canvas3D(config);
 		SimpleUniverse u = new SimpleUniverse(canvas);
-		
+
 		add("Center", canvas);
 		group2 = getAxisRef();
 
-		float amplify = 25.0f;
-		float scale = 0.35f;
+		float scale = 7.0f / ((width + height) / 2.0f); // The width and length
+														// will only go out to
+														// x=7 z=7, dividing by
+														// the avg of width &
+														// height (should be sqr
+														// anyway)
 		LineStripArray[] mesh = getMesh(amplify, scale);
-		
+
 		float RATIO = -midY;
-		
-		for (int i = 0; i < mesh.length; ++i){
+
+		for (int i = 0; i < mesh.length; ++i) {
 			Shape3D meshLine = new Shape3D(mesh[i], createAppearance(useWireframe));
-			
+
 			TransformGroup centerPlane = new TransformGroup();
 			Transform3D centerTrans = new Transform3D();
-			Vector3f centerVect = new Vector3f(
-					-(width / height) * 4.0f,
-					RATIO,
-					-(height / width) * 4.0f);
-			
+			Vector3f centerVect = new Vector3f(-(width / height) * (width / 8.0f), RATIO, -(height / width) * (height / 8.0f));
+
 			centerTrans.setTranslation(centerVect);
 			centerPlane.setTransform(centerTrans);
 			centerPlane.addChild(meshLine);
-			
-			group2.addChild(centerPlane);			
-		}		
-		
+
+			group2.addChild(centerPlane);
+		}
+
 		OrbitBehavior behavior = new OrbitBehavior(canvas, OrbitBehavior.REVERSE_ROTATE);
 		DirectionalLight dl = new DirectionalLight(new Color3f(Color.cyan), new Vector3f(4.0f, -7.0f, 12.0f));
-		BoundingSphere bounds = new BoundingSphere(new Point3d(0.0, 0.0, 0.0), 1000.0);
+		BoundingSphere bounds = new BoundingSphere(new Point3d(0.0, 0.0, 0.0), 100.0);
 		TransformGroup objTrans = new TransformGroup();
-		Transform3D initialView = lookTowardsOriginFrom(new Point3d(0.5, 0.75, -10.0));
-
+		Transform3D initialView = lookTowardsOriginFrom(new Point3d(0.0, 0.75, -10.0));
+		
 		dl.setInfluencingBounds(bounds);
 		objTrans.addChild(group2);
-		
+
 		behavior.setSchedulingBounds(bounds);
 		behavior.setRotXFactor(1);
 		behavior.setRotYFactor(1);
-		
+
 		group.addChild(dl);
 		group.addChild(objTrans);
 
@@ -195,8 +191,8 @@ public class PlaneDrawer extends Applet {
 		u.getViewingPlatform().getViewPlatformTransform().setTransform(initialView);
 		u.addBranchGraph(group);
 	}
-	
-	private BranchGroup getAxisRef(){
+
+	private BranchGroup getAxisRef() {
 		BranchGroup group = new BranchGroup();
 		for (float x = -1.0f; x < 1.0f; x += 0.1f) {
 			Sphere s = new Sphere(0.05f);
@@ -236,17 +232,15 @@ public class PlaneDrawer extends Applet {
 			tg.addChild(c);
 			group.addChild(tg);
 		}
-		
+
 		return group;
 	}
 
-    private Transform3D lookTowardsOriginFrom(Point3d point)
-    {
-        Transform3D move = new Transform3D();
-        Vector3d up = new Vector3d(point.x, point.y + 1, point.z);
-        move.lookAt(point, new Point3d(0.0d, 0.0d, 0.0d), up);        
-    
+	private Transform3D lookTowardsOriginFrom(Point3d point) {
+		Transform3D move = new Transform3D();
+		Vector3d up = new Vector3d(point.x, point.y + 1, point.z);
+		move.lookAt(point, new Point3d(0.0d, 0.0d, 0.0d), up);
 
-        return move;
-    }
+		return move;
+	}
 }
