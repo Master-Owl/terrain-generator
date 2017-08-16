@@ -38,7 +38,7 @@ public class Display {
 		NoiseGenerator gen = new NoiseGenerator(seed, size, size);
 		
 		PlaneDrawer pd = new PlaneDrawer(gen.generatePerlinNoise(8));
-		pd.init(useWireframe, amplify);
+		pd.init(useWireframe, amplify, 7.0f);
 		
 		new MainFrame(pd, 1000, 1000);
 	}

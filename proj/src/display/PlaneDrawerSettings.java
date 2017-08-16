@@ -30,6 +30,17 @@ public class PlaneDrawerSettings extends Settings {
 		else
 			setDefaults();
 	}
+	
+	public void setDetailLevel(int detail){
+		setArrWidth(detail);
+		setArrHeight(detail);
+	}
+	
+	public int getDetailLevel(){
+		int width = getArrWidth();
+		int height = getArrHeight();
+		return width >= height ? width : height;
+	}
 
 	public float getScaleSize() {
 		return scaleSize;

@@ -11,10 +11,10 @@ import javax.media.j3d.BranchGroup;
 import javax.media.j3d.Canvas3D;
 import javax.media.j3d.DirectionalLight;
 import javax.media.j3d.GeometryArray;
+import javax.media.j3d.Group;
 import javax.media.j3d.LineStripArray;
 import javax.media.j3d.Material;
 import javax.media.j3d.PolygonAttributes;
-import javax.media.j3d.QuadArray;
 import javax.media.j3d.Shape3D;
 import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
@@ -35,17 +35,29 @@ public class PlaneDrawer extends Applet {
 	private Color[][] colorMap;
 	private int width;
 	private int height;
-	private Point3d rotationPoint;
+
+	private Point3d centerPoint;
+	private OrbitBehavior behavior;
+	private SimpleUniverse universe;
+	private Canvas3D canvas;
+	private BranchGroup group;
 
 	public PlaneDrawer(float[][] noiseMap) {
 		this.noiseMap = noiseMap;
 		height = noiseMap.length;
 		width = noiseMap[0].length;
-		rotationPoint = new Point3d();
+		centerPoint = new Point3d();
+
+		behavior = null;
+		universe = null;
+		canvas = null;
+		group = null;
 	}
-	
-	public void setNoiseMap(float[][] noiseMap){
+
+	public void setNoiseMap(float[][] noiseMap) {
 		this.noiseMap = noiseMap;
+		height = noiseMap.length;
+		width = noiseMap[0].length;
 	}
 
 	public static Appearance createAppearance(boolean wireframe) {
@@ -82,10 +94,10 @@ public class PlaneDrawer extends Applet {
 
 				rowVertices[col] = vert;
 
-				if (row == height / 2 && col == width / 2){
-					rotationPoint.x = vert.x;
-					rotationPoint.y = vert.y;
-					rotationPoint.z = vert.z;
+				if (row == height / 2 && col == width / 2) {
+					centerPoint.x = vert.x;
+					centerPoint.y = vert.y;
+					centerPoint.z = vert.z;
 				}
 			}
 
@@ -112,65 +124,70 @@ public class PlaneDrawer extends Applet {
 			mesh[height + col].setCoordinates(0, colVertices);
 		}
 
-		System.out.println("Rotation Center: " + rotationPoint);
+		// System.out.println("Center: " + centerPoint);
 
 		return mesh;
 	}
 
-	public void init(boolean useWireframe, float amplify){
+	public void init(boolean useWireframe, float amplify, float size) {
 		removeAll();
-		setLayout(new BorderLayout());		
-		
+		setLayout(new BorderLayout());
+
 		GraphicsConfiguration config = SimpleUniverse.getPreferredConfiguration();
-		BranchGroup group = new BranchGroup();
+		canvas = new Canvas3D(config);
+		universe = new SimpleUniverse(canvas);
+		behavior = new OrbitBehavior(canvas, OrbitBehavior.REVERSE_ROTATE);
+		group = new BranchGroup();
 		BranchGroup group2 = new BranchGroup();
-		Canvas3D canvas = new Canvas3D(config);
-		SimpleUniverse u = new SimpleUniverse(canvas);
-		
-		float scale = 7.0f / ((width + height) / 2.0f); // The width and length
-														// will only go out to
-														// x=7 z=7, dividing by
-														// the avg of width &
-														// height (should be sqr
-														// anyway)
-		
+
+		group.setCapability(Group.ALLOW_CHILDREN_READ);
+		group.setCapability(Group.ALLOW_CHILDREN_WRITE);
+		group.setCapability(Group.ALLOW_CHILDREN_EXTEND);
+		group2.setCapability(BranchGroup.ALLOW_DETACH);
+
+		float scale = getScale(size); // The width and length
+
 		add("Center", canvas);
-		
-		if (useWireframe) group2 = getAxisRef();
+
+		if (useWireframe)
+			group2 = getAxisRef();
 		initPlane(group2, amplify, scale);
-		
-		OrbitBehavior behavior = new OrbitBehavior(canvas, OrbitBehavior.REVERSE_ROTATE);
-		DirectionalLight dl = new DirectionalLight(new Color3f(Color.cyan), new Vector3f(4.0f, -7.0f, 12.0f));
+
+		DirectionalLight dl = getLight(Color.cyan);
 		BoundingSphere bounds = new BoundingSphere(new Point3d(0.0, 0.0, 0.0), 100.0);
 		TransformGroup objTrans = new TransformGroup();
 		Transform3D initialView = lookTowardsOriginFrom(new Point3d(-1.0, 0.75, -12.0));
-		
+
 		dl.setInfluencingBounds(bounds);
 		objTrans.addChild(group2);
 
 		behavior.setSchedulingBounds(bounds);
-//		behavior.setRotationCenter(rotationPoint);
 		behavior.setRotXFactor(1);
 		behavior.setRotYFactor(1);
 
-		group.addChild(dl);
-		group.addChild(objTrans);
+		BranchGroup children = new BranchGroup();
+		children.setCapability(BranchGroup.ALLOW_DETACH);
+		children.addChild(objTrans);
+		children.addChild(dl);
 
-		u.getViewingPlatform().setViewPlatformBehavior(behavior);
-		u.getViewingPlatform().getViewPlatformTransform().setTransform(initialView);
-		u.addBranchGraph(group);
+		group.addChild(children);
+
+		universe.getViewingPlatform().setViewPlatformBehavior(behavior);
+		universe.getViewingPlatform().getViewPlatformTransform().setTransform(initialView);
+		universe.addBranchGraph(group);
 	}
-	
+
 	public void initPlane(BranchGroup group, float amplify, float scale) {
 		LineStripArray[] mesh = getMesh(amplify, scale);
-		float RATIO = -(float)rotationPoint.y;
+		float RATIO = -(float) centerPoint.y;
 
 		for (int i = 0; i < mesh.length; ++i) {
 			Shape3D meshLine = new Shape3D(mesh[i], createAppearance(true));
 
 			TransformGroup centerPlane = new TransformGroup();
 			Transform3D centerTrans = new Transform3D();
-			Vector3f centerVect = new Vector3f(-(width / height) * (width / 8.0f), RATIO, -(height / width) * (height / 8.0f));
+			Vector3f centerVect = new Vector3f(-(width / height) * (width / 8.0f), RATIO,
+					-(height / width) * (height / 8.0f));
 
 			centerTrans.setTranslation(centerVect);
 			centerPlane.setTransform(centerTrans);
@@ -178,6 +195,31 @@ public class PlaneDrawer extends Applet {
 
 			group.addChild(centerPlane);
 		}
+	}
+
+	public void redraw(float amplify, float size) {
+		group.removeChild(group.getChild(0));
+
+		BranchGroup group2 = new BranchGroup();
+		initPlane(group2, amplify, getScale(size));
+
+		TransformGroup objTrans = new TransformGroup();
+		objTrans.addChild(group2);
+
+		BranchGroup children = new BranchGroup();
+		children.setCapability(BranchGroup.ALLOW_DETACH);
+		children.addChild(objTrans);
+		children.addChild(getLight(Color.cyan));
+
+		group.addChild(children);
+	}
+
+	private float getScale(float size) {
+		return size / ((width + height) / 2.0f);
+	}
+
+	private DirectionalLight getLight(Color c) {
+		return new DirectionalLight(new Color3f(c), new Vector3f(4.0f, -7.0f, 12.0f));
 	}
 
 	private BranchGroup getAxisRef() {
