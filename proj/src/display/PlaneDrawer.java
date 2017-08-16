@@ -14,6 +14,7 @@ import javax.media.j3d.GeometryArray;
 import javax.media.j3d.Group;
 import javax.media.j3d.LineStripArray;
 import javax.media.j3d.Material;
+import javax.media.j3d.Node;
 import javax.media.j3d.PolygonAttributes;
 import javax.media.j3d.Shape3D;
 import javax.media.j3d.Transform3D;
@@ -24,7 +25,9 @@ import javax.vecmath.Point3f;
 import javax.vecmath.Vector3d;
 import javax.vecmath.Vector3f;
 
-import com.sun.j3d.utils.behaviors.vp.OrbitBehavior;
+import com.sun.j3d.utils.behaviors.mouse.MouseRotate;
+import com.sun.j3d.utils.behaviors.mouse.MouseTranslate;
+import com.sun.j3d.utils.behaviors.mouse.MouseWheelZoom;
 import com.sun.j3d.utils.geometry.Cone;
 import com.sun.j3d.utils.geometry.Cylinder;
 import com.sun.j3d.utils.geometry.Sphere;
@@ -32,13 +35,12 @@ import com.sun.j3d.utils.universe.SimpleUniverse;
 
 public class PlaneDrawer extends Applet {
 	private float[][] noiseMap;
-	private Color[][] colorMap;
 	private int width;
 	private int height;
 
 	private Point3d centerPoint;
-	private OrbitBehavior behavior;
 	private SimpleUniverse universe;
+	private TransformGroup objTrans;
 	private Canvas3D canvas;
 	private BranchGroup group;
 
@@ -48,7 +50,6 @@ public class PlaneDrawer extends Applet {
 		width = noiseMap[0].length;
 		centerPoint = new Point3d();
 
-		behavior = null;
 		universe = null;
 		canvas = null;
 		group = null;
@@ -117,7 +118,6 @@ public class PlaneDrawer extends Applet {
 				vert.z = row * scaleLengthWidth;
 
 				colVertices[row] = vert;
-
 			}
 
 			mesh[height + col] = new LineStripArray(height, GeometryArray.COORDINATES, new int[] { height });
@@ -136,14 +136,12 @@ public class PlaneDrawer extends Applet {
 		GraphicsConfiguration config = SimpleUniverse.getPreferredConfiguration();
 		canvas = new Canvas3D(config);
 		universe = new SimpleUniverse(canvas);
-		behavior = new OrbitBehavior(canvas, OrbitBehavior.REVERSE_ROTATE);
 		group = new BranchGroup();
 		BranchGroup group2 = new BranchGroup();
 
 		group.setCapability(Group.ALLOW_CHILDREN_READ);
 		group.setCapability(Group.ALLOW_CHILDREN_WRITE);
 		group.setCapability(Group.ALLOW_CHILDREN_EXTEND);
-		group2.setCapability(BranchGroup.ALLOW_DETACH);
 
 		float scale = getScale(size); // The width and length
 
@@ -154,16 +152,12 @@ public class PlaneDrawer extends Applet {
 		initPlane(group2, amplify, scale);
 
 		DirectionalLight dl = getLight(Color.cyan);
-		BoundingSphere bounds = new BoundingSphere(new Point3d(0.0, 0.0, 0.0), 100.0);
-		TransformGroup objTrans = new TransformGroup();
-		Transform3D initialView = lookTowardsOriginFrom(new Point3d(-1.0, 0.75, -12.0));
+		BoundingSphere bounds = new BoundingSphere(new Point3d(0.0, 0.0, 0.0), 100.0);		
+		Transform3D initialView = lookTowardsOriginFrom(new Point3d(0.0, 0.75, -(double)size * 2));
+		objTrans = initMouseBehavior();
 
 		dl.setInfluencingBounds(bounds);
 		objTrans.addChild(group2);
-
-		behavior.setSchedulingBounds(bounds);
-		behavior.setRotXFactor(1);
-		behavior.setRotYFactor(1);
 
 		BranchGroup children = new BranchGroup();
 		children.setCapability(BranchGroup.ALLOW_DETACH);
@@ -172,21 +166,20 @@ public class PlaneDrawer extends Applet {
 
 		group.addChild(children);
 
-		universe.getViewingPlatform().setViewPlatformBehavior(behavior);
 		universe.getViewingPlatform().getViewPlatformTransform().setTransform(initialView);
 		universe.addBranchGraph(group);
 	}
 
 	public void initPlane(BranchGroup group, float amplify, float scale) {
 		LineStripArray[] mesh = getMesh(amplify, scale);
-		float RATIO = -(float) centerPoint.y;
+		float diff = -(float) centerPoint.y;
 
 		for (int i = 0; i < mesh.length; ++i) {
 			Shape3D meshLine = new Shape3D(mesh[i], createAppearance(true));
 
 			TransformGroup centerPlane = new TransformGroup();
 			Transform3D centerTrans = new Transform3D();
-			Vector3f centerVect = new Vector3f(-(width / height) * (width / 8.0f), RATIO,
+			Vector3f centerVect = new Vector3f(-(width / height) * (width / 8.0f), diff,
 					-(height / width) * (height / 8.0f));
 
 			centerTrans.setTranslation(centerVect);
@@ -203,7 +196,8 @@ public class PlaneDrawer extends Applet {
 		BranchGroup group2 = new BranchGroup();
 		initPlane(group2, amplify, getScale(size));
 
-		TransformGroup objTrans = new TransformGroup();
+		TransformGroup objTrans = initMouseBehavior();
+		
 		objTrans.addChild(group2);
 
 		BranchGroup children = new BranchGroup();
@@ -212,6 +206,44 @@ public class PlaneDrawer extends Applet {
 		children.addChild(getLight(Color.cyan));
 
 		group.addChild(children);
+	}
+	
+	private TransformGroup initMouseBehavior(){
+		if (objTrans != null){
+			BranchGroup parent = (BranchGroup)objTrans.getParent();
+			parent.removeChild(objTrans);
+			objTrans.removeAllChildren();
+		} 
+		else {
+			objTrans = new TransformGroup();
+			objTrans.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+			objTrans.setCapability(TransformGroup.ALLOW_CHILDREN_EXTEND);
+			objTrans.setCapability(TransformGroup.ALLOW_CHILDREN_READ);
+			objTrans.setCapability(TransformGroup.ALLOW_CHILDREN_WRITE);
+		}
+		
+		BoundingSphere bounds = new BoundingSphere(new Point3d(0.0, 0.0, 0.0), 100.0);
+		
+		MouseRotate objRotate = new MouseRotate();
+		objRotate.setTransformGroup(objTrans);	
+		objRotate.setSchedulingBounds(bounds);
+		objRotate.setFactor(0.01, -0.01);
+		
+		MouseTranslate objTranslate = new MouseTranslate();
+		objTranslate.setTransformGroup(objTrans);	
+		objTranslate.setSchedulingBounds(bounds);
+		objTranslate.setFactor(-0.01, 0.01);
+		
+		MouseWheelZoom objZoom = new MouseWheelZoom();
+		objZoom.setTransformGroup(objTrans);
+		objZoom.setSchedulingBounds(bounds);
+		
+		objTrans.addChild(objRotate);
+		objTrans.addChild(objTranslate);
+		objTrans.addChild(objZoom);
+		
+		
+		return objTrans;
 	}
 
 	private float getScale(float size) {
