@@ -10,11 +10,14 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import com.sun.j3d.utils.applet.MainFrame;
+
 import perlinNoise.NoiseGenerator;
 import terrain.SettingsWindow;
 
 public class GUI implements AppWindow {
 	private JFrame window;
+	private JPanel windowContent;
 	private String windowName;
 	private Dimension windowSize;
 	
@@ -26,8 +29,6 @@ public class GUI implements AppWindow {
 	public GUI(String windowName, Dimension windowSize){
 		this.windowName = windowName;
 		this.windowSize = windowSize;
-		
-		init();
 	}
 	
 	@Override
@@ -46,13 +47,15 @@ public class GUI implements AppWindow {
 	public void generate(boolean keepseed) {
 		Random rand = new Random();		
 		long seed = keepseed ? settings.getSeed() : rand.nextLong();
-		
+				
 		PlaneDrawerSettings pds = (PlaneDrawerSettings)settingsWindow.getSettings();
 		pds.setSeed(seed);
 		generator.changeSettings(pds);
 		
 		planeDrawer.setNoiseMap(generator.generatePerlinNoise(pds.getOctaves()));
 		planeDrawer.init(pds.wireframe(), pds.getHeightAmplify());
+		
+		windowContent.getComponent(0).revalidate();
 	}
 	
 	private void initWindow(){
@@ -71,6 +74,7 @@ public class GUI implements AppWindow {
 		
 		settings = new PlaneDrawerSettings();		
 		settings.setSeed(rand.nextLong());
+		settings.useWireframe(false);
 		settings.setArrWidth(35);
 		settings.setArrHeight(35);
 		
@@ -85,21 +89,20 @@ public class GUI implements AppWindow {
 		
 		planeDrawer.init(
 				settings.wireframe(),
-				settings.getHeightAmplify());	
+				settings.getHeightAmplify());
 		
 		settingsWindow = new SettingsWindow(settings, this);
 	}
 	
 	private void initPanels(){
-		JPanel windowContent = new JPanel();
-		JPanel terrainPanel = new JPanel();
+		windowContent = new JPanel();
 		JPanel buttons = new JPanel();
 		
 		windowContent.setLayout(new BoxLayout(windowContent, BoxLayout.Y_AXIS));		
 		buttons.setLayout(new BoxLayout(buttons, BoxLayout.X_AXIS));				
 		
 		JButton regenerate = new JButton("Generate");
-		regenerate.addActionListener(new ActionListener() {			
+		regenerate.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				generate(false);
@@ -114,18 +117,12 @@ public class GUI implements AppWindow {
 			}
 		});
 		
-		terrainPanel.add(planeDrawer);	
 		buttons.add(regenerate);
 		buttons.add(settingsButton);
 		
-		windowContent.add(terrainPanel);
+		windowContent.add(planeDrawer);
 		windowContent.add(buttons);
 		
 		window.getContentPane().add(windowContent);
-		window.pack();
-	}
-	
-	private void repaint(){
-		
 	}
 }

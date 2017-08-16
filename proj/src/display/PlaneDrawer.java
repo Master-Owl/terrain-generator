@@ -35,13 +35,13 @@ public class PlaneDrawer extends Applet {
 	private Color[][] colorMap;
 	private int width;
 	private int height;
-	private float midY;
+	private Point3d rotationPoint;
 
 	public PlaneDrawer(float[][] noiseMap) {
 		this.noiseMap = noiseMap;
 		height = noiseMap.length;
 		width = noiseMap[0].length;
-		midY = 0.0f;
+		rotationPoint = new Point3d();
 	}
 	
 	public void setNoiseMap(float[][] noiseMap){
@@ -68,7 +68,6 @@ public class PlaneDrawer extends Applet {
 
 	private LineStripArray[] getMesh(float scaleHeight, float scaleLengthWidth) {
 		LineStripArray[] mesh = new LineStripArray[width + height];
-		boolean sameMid = false;
 
 		// Row lines
 		for (int row = 0; row < height; ++row) {
@@ -83,8 +82,11 @@ public class PlaneDrawer extends Applet {
 
 				rowVertices[col] = vert;
 
-				if (row == height / 2 && col == width / 2)
-					midY = vert.y;
+				if (row == height / 2 && col == width / 2){
+					rotationPoint.x = vert.x;
+					rotationPoint.y = vert.y;
+					rotationPoint.z = vert.z;
+				}
 			}
 
 			mesh[row] = new LineStripArray(width, GeometryArray.COORDINATES, new int[] { width });
@@ -104,16 +106,13 @@ public class PlaneDrawer extends Applet {
 
 				colVertices[row] = vert;
 
-				if (row == height / 2 && col == width / 2 && midY == vert.y)
-					sameMid = true;
 			}
 
 			mesh[height + col] = new LineStripArray(height, GeometryArray.COORDINATES, new int[] { height });
 			mesh[height + col].setCoordinates(0, colVertices);
 		}
 
-		System.out.println("Same Mid: " + sameMid);
-		if (sameMid) System.out.println("   " + midY);
+		System.out.println("Rotation Center: " + rotationPoint);
 
 		return mesh;
 	}
@@ -144,12 +143,13 @@ public class PlaneDrawer extends Applet {
 		DirectionalLight dl = new DirectionalLight(new Color3f(Color.cyan), new Vector3f(4.0f, -7.0f, 12.0f));
 		BoundingSphere bounds = new BoundingSphere(new Point3d(0.0, 0.0, 0.0), 100.0);
 		TransformGroup objTrans = new TransformGroup();
-		Transform3D initialView = lookTowardsOriginFrom(new Point3d(0.0, 0.75, -10.0));
+		Transform3D initialView = lookTowardsOriginFrom(new Point3d(-1.0, 0.75, -12.0));
 		
 		dl.setInfluencingBounds(bounds);
 		objTrans.addChild(group2);
 
 		behavior.setSchedulingBounds(bounds);
+//		behavior.setRotationCenter(rotationPoint);
 		behavior.setRotXFactor(1);
 		behavior.setRotYFactor(1);
 
@@ -163,7 +163,7 @@ public class PlaneDrawer extends Applet {
 	
 	public void initPlane(BranchGroup group, float amplify, float scale) {
 		LineStripArray[] mesh = getMesh(amplify, scale);
-		float RATIO = -midY;
+		float RATIO = -(float)rotationPoint.y;
 
 		for (int i = 0; i < mesh.length; ++i) {
 			Shape3D meshLine = new Shape3D(mesh[i], createAppearance(true));

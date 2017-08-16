@@ -1,6 +1,6 @@
 package display;
 
-import java.awt.Color;
+import java.awt.Dimension;
 import java.util.Random;
 
 import com.sun.j3d.utils.applet.MainFrame;
@@ -17,7 +17,7 @@ public class Display {
 
 //		test3DAxis();
 //		plane();
-		
+		application();
 	}
 	
 	private static void test3DAxis(){
@@ -36,11 +36,16 @@ public class Display {
 		
 		System.out.println("Seed: " + seed);
 		NoiseGenerator gen = new NoiseGenerator(seed, size, size);
-		Color[][] colorMap = new Color[size][size];
 		
 		PlaneDrawer pd = new PlaneDrawer(gen.generatePerlinNoise(8));
 		pd.init(useWireframe, amplify);
 		
 		new MainFrame(pd, 1000, 1000);
+	}
+	
+	private static void application(){
+		GUI gui = new GUI("Terrain Visualization", new Dimension(1200, 1000));
+		gui.init();
+		gui.show();
 	}
 }
