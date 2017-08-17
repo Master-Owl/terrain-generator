@@ -231,51 +231,11 @@ public class Window implements AppWindow{
             repaint();
     }
 
-    private String determineBiome(Biome b){
-        switch(b){
-            case OCEAN:
-                return "Ocean";
-            case BEACH:
-                return "Beach";
-            case DESERT:
-                return "Desert";
-            case TEMPERATE_DESERT:
-                return "Temperate Desert";
-            case SCORCHED_DESERT:
-                return "Scorched Desert";
-            case GRASSLAND:
-                return "Grassland";
-            case SHRUBLAND:
-                return "Shrubland";
-            case CRAG:
-                return "Crag";
-            case LAKES:
-                return "Lakes";
-            case MARSH:
-                return "Marsh";
-            case PLAINS:
-                return "Plains";
-            case FOREST:
-                return "Forest";
-            case RAIN_FOREST:
-                return "Rain Forest";
-            case TAIGA:
-                return "Taiga";
-            case TUNDRA:
-                return "Tundra";
-            case SNOW:
-                return "Snow";
-        }
-
-        return "err";
-    }
-
     private void changeBiomeLabel(MouseEvent e){
         int x = e.getX();
         int y = e.getY();
         BiomeLabel.setText("Biome: "
-                + determineBiome(MapInterpreter
-                .GetBiome(ElevationNoise[x][y], TemperatureNoise[x][y], MoistureNoise[x][y])));
+                + MapInterpreter.GetBiome(ElevationNoise[x][y], TemperatureNoise[x][y], MoistureNoise[x][y]).toString());
     }
 
     private void repaint(){
