@@ -82,7 +82,7 @@ public class GUI implements AppWindow {
 
 		settings = new PlaneDrawerSettings();
 		settings.setSeed(rand.nextLong());
-		settings.useWireframe(true);
+		settings.useWireframe(false);
 		settings.setScaleSize(7.0f);
 		settings.setDetailLevel(35);
 		generator = new NoiseGenerator(

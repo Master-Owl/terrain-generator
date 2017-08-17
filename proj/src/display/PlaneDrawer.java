@@ -6,6 +6,7 @@ import java.awt.Color;
 import java.awt.GraphicsConfiguration;
 import java.awt.Point;
 
+import javax.media.j3d.AmbientLight;
 import javax.media.j3d.Appearance;
 import javax.media.j3d.BoundingSphere;
 import javax.media.j3d.BranchGroup;
@@ -117,8 +118,8 @@ public class PlaneDrawer extends Applet {
 		if (useWireframe) initWireframe(group2, amplify, scale);
 		else initPlane(group2, amplify, scale);		
 
-		DirectionalLight dl = getLight(Color.white);
-		BoundingSphere bounds = new BoundingSphere(new Point3d(0.0, 0.0, 0.0), 100.0);		
+		DirectionalLight dl = getDirectionalLight(Color.white);
+		BoundingSphere bounds = new BoundingSphere(new Point3d(0.0, 0.0, 0.0), 1000.0);		
 		Transform3D initialView = lookTowardsOriginFrom(new Point3d(0.0, 0.75, -(double)size * 2));
 		objTrans = initMouseBehavior();
 
@@ -157,25 +158,27 @@ public class PlaneDrawer extends Applet {
 	}
 
 	public void initPlane(BranchGroup group, float amplify, float scale){
-		QuadArray quads = getQuads(amplify, scale);
+		Shape3D[] quads = getQuads(amplify, scale);
 		float diff = -(float) centerPoint.y;
 		
-		Shape3D plane = new Shape3D(quads);
-		
-		TransformGroup centerPlane = new TransformGroup();
-		Transform3D centerTrans = new Transform3D();
-		Vector3f centerVect = new Vector3f(-(width / height) * (width / 8.0f), diff,
-				-(height / width) * (height / 8.0f));
-		
-		centerTrans.setTranslation(centerVect);
-		centerPlane.setTransform(centerTrans);
-		centerPlane.addChild(plane);
-		
-		group.addChild(centerPlane);
+		for (int i = 0; i < quads.length; ++i){
+			TransformGroup centerPlane = new TransformGroup();
+			Transform3D centerTrans = new Transform3D();
+			Vector3f centerVect = new Vector3f(-(width / height) * (width / 8.0f), diff,
+					-(height / width) * (height / 8.0f));
+			
+			centerTrans.setTranslation(centerVect);
+			centerPlane.setTransform(centerTrans);
+			centerPlane.addChild(quads[i]);
+			
+			group.addChild(centerPlane);
+		}	
 	}
 	
 	public void redraw(boolean useWireframe, float amplify, float size) {
-		group.removeChild(group.getChild(0));
+		for (int i = 0; i < group.numChildren(); ++i){
+			group.removeChild(group.getChild(i));
+		}		
 
 		BranchGroup group2 = new BranchGroup();
 		
@@ -234,13 +237,15 @@ public class PlaneDrawer extends Applet {
 		return mesh;
 	}
 	
-	private QuadArray getQuads(float scaleHeight, float scaleLengthWidth){
-		int cornerCount = 0;
-		QuadArray quadArray = new QuadArray(determineQuadCount() * 4, 
-				GeometryArray.COORDINATES | GeometryArray.NORMALS | GeometryArray.COLOR_3);
-				
+	private Shape3D[] getQuads(float scaleHeight, float scaleLengthWidth){
+		int quadCount = 0;
+		Shape3D[] quads = new Shape3D[determineQuadCount()];
+		
 		for (int row = 0; row < height - 1; ++row){
 			for (int col = 0; col < width - 1; ++col){
+				QuadArray quadArray = new QuadArray(4, 
+						GeometryArray.COORDINATES | GeometryArray.NORMALS | GeometryArray.COLOR_3);
+				
 				int x1 = col;
 				int x2 = col + 1;
 				int y1 = row;
@@ -254,18 +259,17 @@ public class PlaneDrawer extends Applet {
 				};
 				
 				Color[] colors = {
-					terrainMap.getTerrainPoint(x1, y1).getBiome().color(),
-					terrainMap.getTerrainPoint(x1, y2).getBiome().color(),
-					terrainMap.getTerrainPoint(x2, y1).getBiome().color(),
-					terrainMap.getTerrainPoint(x2, y2).getBiome().color()
+					terrainMap.getTerrainPoint(x1, y1).getBiome().color(), // bottom left
+					terrainMap.getTerrainPoint(x1, y2).getBiome().color(), // bottom right
+					terrainMap.getTerrainPoint(x2, y1).getBiome().color(), // top left
+					terrainMap.getTerrainPoint(x2, y2).getBiome().color()  // top right
 				};
 
 				for (int i = 0; i < 4; ++i){
 					alterPoint(points[i], scaleHeight, scaleLengthWidth);
-					quadArray.setNormal(cornerCount, new Vector3f(0, 1, 0));
-					quadArray.setColor(cornerCount, new Color3f(colors[i]));
-					quadArray.setCoordinate(cornerCount, points[i]);
-					cornerCount++;
+					quadArray.setNormal(i, getNormal(points[i]));
+					quadArray.setColor(i, new Color3f(colors[i]));
+					quadArray.setCoordinate(i, points[i]);
 				}	
 				
 				if (row == height / 2 && col == width / 2) {
@@ -273,16 +277,59 @@ public class PlaneDrawer extends Applet {
 					centerPoint.y = points[0].y;
 					centerPoint.z = points[0].z;
 				}
+				
+				Appearance ap = new Appearance();
+				Material mat = new Material();
+				Color3f specular = new Color3f(blendColors(colors));
+				mat.setDiffuseColor(blendColors(colors));
+				specular.scale(5.0f);
+				specular.clampMax(0.8f);
+				mat.setSpecularColor(specular);
+				ap.setMaterial(mat);
+				quads[quadCount++] = new Shape3D(quadArray, ap);
 			}
 		}
 		
-		return quadArray;
+		return quads;		
 	}
 	
 	private void alterPoint(Point3f point, float scaleHeight, float scaleLengthWidth){
 		point.x *= scaleLengthWidth;
 		point.y *= scaleHeight;
 		point.z *= scaleLengthWidth;
+	}
+	
+	private Vector3f getNormal(Point3f point){
+		Vector3f normal = new Vector3f(point);
+		normal.normalize();
+		return normal;
+	}
+	
+	private Color3f blendColors(Color[] colors){
+		int r[] = new int[colors.length];
+		int g[] = new int[colors.length];
+		int b[] = new int[colors.length];
+		
+		for (int i = 0; i < colors.length; ++i){
+			r[i] = colors[i].getRed();
+			g[i] = colors[i].getGreen();
+			b[i] = colors[i].getBlue();
+		}
+		
+		int redSum	 = 0;
+		int greenSum = 0;
+		int blueSum  = 0;
+		
+		for (int i = 0; i < colors.length; ++i){
+			redSum 	 += r[i];
+			greenSum += g[i];
+			blueSum  += b[i];
+		}
+		
+		return new Color3f(
+				redSum 	 / colors.length, 
+				greenSum / colors.length,
+				blueSum  / colors.length);
 	}
 	
 	private TransformGroup initMouseBehavior(){
@@ -327,8 +374,12 @@ public class PlaneDrawer extends Applet {
 		return size / ((width + height) / 2.0f);
 	}
 
-	private DirectionalLight getLight(Color c) {
-		return new DirectionalLight(new Color3f(c), new Vector3f(4.0f, -7.0f, 12.0f));
+	private DirectionalLight getDirectionalLight(Color c) {
+		return new DirectionalLight(new Color3f(c), new Vector3f(4.0f, -7.0f, -12.0f));
+	}
+	
+	private AmbientLight getLight(Color c){
+		return new AmbientLight(new Color3f(c));
 	}
 
 	private BranchGroup getAxisRef() {
