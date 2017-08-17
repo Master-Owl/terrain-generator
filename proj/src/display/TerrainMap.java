@@ -76,4 +76,14 @@ public class TerrainMap {
 		this.terrainMap = terrainMap;
 	}
 
+	
+	public int getHeight() {
+		return height;
+	}
+
+	public int getWidth() {
+		return width;
+	}
+
+	
 }

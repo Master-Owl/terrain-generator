@@ -61,7 +61,7 @@ public class SettingsWindow extends JFrame {
 		if (s instanceof PlaneDrawerSettings) {
 			PlaneDrawerSettings pds = new PlaneDrawerSettings(s);
 			settings = pds;
-			wireframe = pds.wireframe();
+			wireframe = pds.useWireframe();
 			scaleSizeSlider = pds.getScaleSize();
 			heightAmplifySlider = pds.getHeightAmplify();
 			detailSlider = pds.getArrWidth();

@@ -4,6 +4,7 @@ import java.applet.Applet;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.GraphicsConfiguration;
+import java.awt.Point;
 
 import javax.media.j3d.Appearance;
 import javax.media.j3d.BoundingSphere;
@@ -16,6 +17,7 @@ import javax.media.j3d.LineStripArray;
 import javax.media.j3d.Material;
 import javax.media.j3d.Node;
 import javax.media.j3d.PolygonAttributes;
+import javax.media.j3d.QuadArray;
 import javax.media.j3d.Shape3D;
 import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
@@ -34,7 +36,7 @@ import com.sun.j3d.utils.geometry.Sphere;
 import com.sun.j3d.utils.universe.SimpleUniverse;
 
 public class PlaneDrawer extends Applet {
-	private float[][] noiseMap;
+	private TerrainMap terrainMap;
 	private int width;
 	private int height;
 
@@ -45,20 +47,35 @@ public class PlaneDrawer extends Applet {
 	private BranchGroup group;
 
 	public PlaneDrawer(float[][] noiseMap) {
-		this.noiseMap = noiseMap;
+		terrainMap = new TerrainMap(noiseMap);
 		height = noiseMap.length;
 		width = noiseMap[0].length;
+		setDefaults();
+	}
+	
+	public PlaneDrawer(TerrainMap map){
+		terrainMap = map;
+		height = map.getHeight();
+		width = map.getWidth();
+		setDefaults();
+	}
+	
+	private void setDefaults(){
 		centerPoint = new Point3d();
-
 		universe = null;
 		canvas = null;
 		group = null;
+		objTrans = null;
 	}
 
-	public void setNoiseMap(float[][] noiseMap) {
-		this.noiseMap = noiseMap;
-		height = noiseMap.length;
-		width = noiseMap[0].length;
+	public void setNoiseMaps(float[][] elevationMap, float[][] temperatureMap, float[][] moistureMap) {
+		try {
+			terrainMap = new TerrainMap(elevationMap, temperatureMap, moistureMap);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		height = terrainMap.getHeight();
+		width = terrainMap.getWidth();
 	}
 
 	public static Appearance createAppearance(boolean wireframe) {
@@ -79,56 +96,6 @@ public class PlaneDrawer extends Applet {
 		return ap;
 	}
 
-	private LineStripArray[] getMesh(float scaleHeight, float scaleLengthWidth) {
-		LineStripArray[] mesh = new LineStripArray[width + height];
-
-		// Row lines
-		for (int row = 0; row < height; ++row) {
-			Point3f[] rowVertices = new Point3f[width];
-
-			for (int col = 0; col < width; ++col) {
-				Point3f vert = new Point3f();
-
-				vert.x = col * scaleLengthWidth;
-				vert.y = noiseMap[row][col] * scaleHeight;
-				vert.z = row * scaleLengthWidth;
-
-				rowVertices[col] = vert;
-
-				if (row == height / 2 && col == width / 2) {
-					centerPoint.x = vert.x;
-					centerPoint.y = vert.y;
-					centerPoint.z = vert.z;
-				}
-			}
-
-			mesh[row] = new LineStripArray(width, GeometryArray.COORDINATES, new int[] { width });
-			mesh[row].setCoordinates(0, rowVertices);
-		}
-
-		// Column lines
-		for (int col = 0; col < width; ++col) {
-			Point3f[] colVertices = new Point3f[height];
-
-			for (int row = 0; row < height; ++row) {
-				Point3f vert = new Point3f();
-
-				vert.x = col * scaleLengthWidth;
-				vert.y = noiseMap[row][col] * scaleHeight;
-				vert.z = row * scaleLengthWidth;
-
-				colVertices[row] = vert;
-			}
-
-			mesh[height + col] = new LineStripArray(height, GeometryArray.COORDINATES, new int[] { height });
-			mesh[height + col].setCoordinates(0, colVertices);
-		}
-
-		// System.out.println("Center: " + centerPoint);
-
-		return mesh;
-	}
-
 	public void init(boolean useWireframe, float amplify, float size) {
 		removeAll();
 		setLayout(new BorderLayout());
@@ -147,11 +114,10 @@ public class PlaneDrawer extends Applet {
 
 		add("Center", canvas);
 
-		if (useWireframe)
-			group2 = getAxisRef();
-		initPlane(group2, amplify, scale);
+		if (useWireframe) initWireframe(group2, amplify, scale);
+		else initPlane(group2, amplify, scale);		
 
-		DirectionalLight dl = getLight(Color.cyan);
+		DirectionalLight dl = getLight(Color.white);
 		BoundingSphere bounds = new BoundingSphere(new Point3d(0.0, 0.0, 0.0), 100.0);		
 		Transform3D initialView = lookTowardsOriginFrom(new Point3d(0.0, 0.75, -(double)size * 2));
 		objTrans = initMouseBehavior();
@@ -170,7 +136,7 @@ public class PlaneDrawer extends Applet {
 		universe.addBranchGraph(group);
 	}
 
-	public void initPlane(BranchGroup group, float amplify, float scale) {
+	public void initWireframe(BranchGroup group, float amplify, float scale) {
 		LineStripArray[] mesh = getMesh(amplify, scale);
 		float diff = -(float) centerPoint.y;
 
@@ -190,11 +156,31 @@ public class PlaneDrawer extends Applet {
 		}
 	}
 
-	public void redraw(float amplify, float size) {
+	public void initPlane(BranchGroup group, float amplify, float scale){
+		QuadArray quads = getQuads(amplify, scale);
+		float diff = -(float) centerPoint.y;
+		
+		Shape3D plane = new Shape3D(quads);
+		
+		TransformGroup centerPlane = new TransformGroup();
+		Transform3D centerTrans = new Transform3D();
+		Vector3f centerVect = new Vector3f(-(width / height) * (width / 8.0f), diff,
+				-(height / width) * (height / 8.0f));
+		
+		centerTrans.setTranslation(centerVect);
+		centerPlane.setTransform(centerTrans);
+		centerPlane.addChild(plane);
+		
+		group.addChild(centerPlane);
+	}
+	
+	public void redraw(boolean useWireframe, float amplify, float size) {
 		group.removeChild(group.getChild(0));
 
 		BranchGroup group2 = new BranchGroup();
-		initPlane(group2, amplify, getScale(size));
+		
+		if (useWireframe) initWireframe(group2, amplify, getScale(size));
+		else initPlane(group2, amplify, getScale(size));
 
 		TransformGroup objTrans = initMouseBehavior();
 		
@@ -203,9 +189,100 @@ public class PlaneDrawer extends Applet {
 		BranchGroup children = new BranchGroup();
 		children.setCapability(BranchGroup.ALLOW_DETACH);
 		children.addChild(objTrans);
-		children.addChild(getLight(Color.cyan));
+		children.addChild(getLight(Color.white));
 
 		group.addChild(children);
+	}
+	
+	private LineStripArray[] getMesh(float scaleHeight, float scaleLengthWidth) {
+		LineStripArray[] mesh = new LineStripArray[width + height];
+
+		// Row lines
+		for (int row = 0; row < height; ++row) {
+			Point3f[] rowVertices = new Point3f[width];
+
+			for (int col = 0; col < width; ++col) {
+				Point3f vert = new Point3f(terrainMap.getTerrainPoint(row, col).getPoint());
+				alterPoint(vert, scaleHeight, scaleLengthWidth);
+				rowVertices[col] = vert;
+
+				if (row == height / 2 && col == width / 2) {
+					centerPoint.x = vert.x;
+					centerPoint.y = vert.y;
+					centerPoint.z = vert.z;
+				}
+			}
+
+			mesh[row] = new LineStripArray(width, GeometryArray.COORDINATES, new int[] { width });
+			mesh[row].setCoordinates(0, rowVertices);
+		}
+
+		// Column lines
+		for (int col = 0; col < width; ++col) {
+			Point3f[] colVertices = new Point3f[height];
+
+			for (int row = 0; row < height; ++row) {
+				Point3f vert = new Point3f(terrainMap.getTerrainPoint(row, col).getPoint());
+				alterPoint(vert, scaleHeight, scaleLengthWidth);
+				colVertices[row] = vert;
+			}
+
+			mesh[height + col] = new LineStripArray(height, GeometryArray.COORDINATES, new int[] { height });
+			mesh[height + col].setCoordinates(0, colVertices);
+		}
+
+		return mesh;
+	}
+	
+	private QuadArray getQuads(float scaleHeight, float scaleLengthWidth){
+		int cornerCount = 0;
+		QuadArray quadArray = new QuadArray(determineQuadCount() * 4, 
+				GeometryArray.COORDINATES | GeometryArray.NORMALS | GeometryArray.COLOR_3);
+				
+		for (int row = 0; row < height - 1; ++row){
+			for (int col = 0; col < width - 1; ++col){
+				int x1 = col;
+				int x2 = col + 1;
+				int y1 = row;
+				int y2 = row + 1;
+				
+				Point3f[] points = { 
+					new Point3f(terrainMap.getTerrainPoint(x1, y1).getPoint()),
+					new Point3f(terrainMap.getTerrainPoint(x1, y2).getPoint()),
+					new Point3f(terrainMap.getTerrainPoint(x2, y1).getPoint()),
+					new Point3f(terrainMap.getTerrainPoint(x2, y2).getPoint())
+				};
+				
+				Color[] colors = {
+					terrainMap.getTerrainPoint(x1, y1).getBiome().color(),
+					terrainMap.getTerrainPoint(x1, y2).getBiome().color(),
+					terrainMap.getTerrainPoint(x2, y1).getBiome().color(),
+					terrainMap.getTerrainPoint(x2, y2).getBiome().color()
+				};
+
+				for (int i = 0; i < 4; ++i){
+					alterPoint(points[i], scaleHeight, scaleLengthWidth);
+					quadArray.setNormal(cornerCount, new Vector3f(0, 1, 0));
+					quadArray.setColor(cornerCount, new Color3f(colors[i]));
+					quadArray.setCoordinate(cornerCount, points[i]);
+					cornerCount++;
+				}	
+				
+				if (row == height / 2 && col == width / 2) {
+					centerPoint.x = points[0].x;
+					centerPoint.y = points[0].y;
+					centerPoint.z = points[0].z;
+				}
+			}
+		}
+		
+		return quadArray;
+	}
+	
+	private void alterPoint(Point3f point, float scaleHeight, float scaleLengthWidth){
+		point.x *= scaleLengthWidth;
+		point.y *= scaleHeight;
+		point.z *= scaleLengthWidth;
 	}
 	
 	private TransformGroup initMouseBehavior(){
@@ -304,5 +381,9 @@ public class PlaneDrawer extends Applet {
 		move.lookAt(point, new Point3d(0.0d, 0.0d, 0.0d), up);
 
 		return move;
+	}
+
+	private int determineQuadCount(){
+		return (width - 1) * (height - 1);		
 	}
 }

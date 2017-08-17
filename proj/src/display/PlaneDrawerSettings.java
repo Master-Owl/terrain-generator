@@ -50,7 +50,7 @@ public class PlaneDrawerSettings extends Settings {
 		return heightAmplify;
 	}
 
-	public boolean wireframe() {
+	public boolean useWireframe() {
 		return wireframe;
 	}
 

@@ -46,14 +46,22 @@ public class GUI implements AppWindow {
 	@Override
 	public void generate(boolean keepseed) {
 		Random rand = new Random();
-		long seed = keepseed ? settings.getSeed() : rand.nextLong();
-
 		PlaneDrawerSettings pds = (PlaneDrawerSettings) settingsWindow.getSettings();
-		pds.setSeed(seed);
+		
+		if (!keepseed) pds.setSeed(rand.nextLong());
 		generator.changeSettings(pds);
-
-		planeDrawer.setNoiseMap(generator.generatePerlinNoise(pds.getOctaves()));
-		planeDrawer.redraw(pds.getHeightAmplify(), pds.getScaleSize());
+		float[][] elevation = generator.generatePerlinNoise(pds.getOctaves());
+		
+		if (!keepseed) pds.setSeed(rand.nextLong());
+		generator.changeSettings(pds);
+		float[][] temperature = generator.generatePerlinNoise(pds.getOctaves());
+			
+		if (!keepseed) pds.setSeed(rand.nextLong());
+		generator.changeSettings(pds);
+		float[][] moisture = generator.generatePerlinNoise(pds.getOctaves());
+		
+		planeDrawer.setNoiseMaps(elevation, temperature, moisture);
+		planeDrawer.redraw(pds.useWireframe(), pds.getHeightAmplify(), pds.getScaleSize());
 
 		windowContent.getComponent(0).revalidate();
 	}
@@ -69,19 +77,35 @@ public class GUI implements AppWindow {
 	}
 
 	private void initContent() {
+		try {
 		Random rand = new Random();
 
 		settings = new PlaneDrawerSettings();
 		settings.setSeed(rand.nextLong());
-		settings.useWireframe(false);
+		settings.useWireframe(true);
 		settings.setScaleSize(7.0f);
 		settings.setDetailLevel(35);
+		generator = new NoiseGenerator(
+				settings.getSeed(), settings.getArrWidth(), settings.getArrHeight());
+		
+		float[][] elevation = generator.generatePerlinNoise(settings.getOctaves());
+		
+		settings.setSeed(rand.nextLong());
+		generator.changeSettings(settings);
+		float[][] temperature = generator.generatePerlinNoise(settings.getOctaves());
+			
+		settings.setSeed(rand.nextLong());
+		generator.changeSettings(settings);
+		float[][] moisture = generator.generatePerlinNoise(settings.getOctaves());
 
-		generator = new NoiseGenerator(settings.getSeed(), settings.getArrWidth(), settings.getDetailLevel());
-		planeDrawer = new PlaneDrawer(generator.generatePerlinNoise(settings.getOctaves()));
-		planeDrawer.init(settings.wireframe(), settings.getHeightAmplify(), settings.getScaleSize());
-
+		generator = new NoiseGenerator(settings.getSeed(), settings.getArrWidth(), settings.getDetailLevel());		
+		planeDrawer = new PlaneDrawer(new TerrainMap(elevation, temperature, moisture));		
+		planeDrawer.init(settings.useWireframe(), settings.getHeightAmplify(), settings.getScaleSize());
 		settingsWindow = new SettingsWindow(settings, this);
+		
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	private void initPanels() {
