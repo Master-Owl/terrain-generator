@@ -80,13 +80,18 @@ public class PlaneDrawer extends Applet {
 		width = terrainMap.getWidth();
 	}
 
-	public Appearance wireframeAppearance() {
+	public Appearance wireframeAppearance(boolean wireframeOnly) {
 		Appearance ap = new Appearance();
 
 		// Render as wireframe
 		PolygonAttributes polyAttr = new PolygonAttributes();
 		ColoringAttributes ca = new ColoringAttributes();
-		ca.setColor(new Color3f(0, 0, 0));
+		
+		if (wireframeOnly)
+			ca.setColor(new Color3f(1, 1, 1));
+		else
+			ca.setColor(new Color3f(0, 0, 0));
+		
 		polyAttr.setPolygonMode(PolygonAttributes.POLYGON_LINE);
 		polyAttr.setCullFace(PolygonAttributes.CULL_NONE);
 		ap.setPolygonAttributes(polyAttr);
@@ -95,7 +100,7 @@ public class PlaneDrawer extends Applet {
 		return ap;
 	}
 
-	public void init(boolean useWireframe, float amplify, float size) {
+	public void init(boolean wireframeOnly, float amplify, float size) {
 		removeAll();
 		setLayout(new BorderLayout());
 
@@ -113,12 +118,12 @@ public class PlaneDrawer extends Applet {
 
 		add("Center", canvas);
 
-		if (useWireframe) {
-			initWireframe(group2, amplify, scale);
+		if (wireframeOnly) {
+			initWireframe(group2, amplify, scale, wireframeOnly);
 		}
 		else {
 			initPlane(group2, amplify, scale);
-			initWireframe(group2, amplify, scale);
+			initWireframe(group2, amplify, scale, wireframeOnly);
 		}	
 
 		DirectionalLight dl = getDirectionalLight(Color.white, size, -size, -size);
@@ -143,12 +148,12 @@ public class PlaneDrawer extends Applet {
 		universe.addBranchGraph(group);
 	}
 
-	public void initWireframe(BranchGroup group, float amplify, float scale) {
+	public void initWireframe(BranchGroup group, float amplify, float scale, boolean wireframeOnly) {
 		LineStripArray[] mesh = getMesh(amplify, scale);
 		float diff = -(float) centerPoint.y;
 
 		for (int i = 0; i < mesh.length; ++i) {
-			Shape3D meshLine = new Shape3D(mesh[i], wireframeAppearance());
+			Shape3D meshLine = new Shape3D(mesh[i], wireframeAppearance(wireframeOnly));
 
 			TransformGroup centerPlane = new TransformGroup();
 			Transform3D centerTrans = new Transform3D();
@@ -181,7 +186,7 @@ public class PlaneDrawer extends Applet {
 		}	
 	}
 	
-	public void redraw(boolean useWireframe, float amplify, float size) {
+	public void redraw(boolean wireframeOnly, float amplify, float size) {
 		for (int i = 0; i < group.numChildren(); ++i){
 			group.removeChild(group.getChild(i));
 		}		
@@ -190,12 +195,12 @@ public class PlaneDrawer extends Applet {
 		DirectionalLight dl = getDirectionalLight(Color.white, size, -size, -size);
 		DirectionalLight dl2 = getDirectionalLight(Color.white, -size, -size, size);
 		
-		if (useWireframe) {
-			initWireframe(group2, amplify, getScale(size));
+		if (wireframeOnly) {
+			initWireframe(group2, amplify, getScale(size), wireframeOnly);
 		}
 		else {
 			initPlane(group2, amplify, getScale(size));
-			initWireframe(group2, amplify, getScale(size));
+			initWireframe(group2, amplify, getScale(size), wireframeOnly);
 		}
 
 		TransformGroup objTrans = initMouseBehavior();
