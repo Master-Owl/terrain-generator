@@ -34,7 +34,7 @@ public class SettingsWindow extends JFrame {
 	private final float MAX_SCALE = 10.0f;
 	private final float MIN_HEIGHT = 1.00f;
 	private final float MAX_HEIGHT = 40.0f;
-	private final int MIN_DETAIL = 1;
+	private final int MIN_DETAIL = 10;
 	private final int MAX_DETAIL = 100;
 
 	private int octavesSlider;
@@ -64,7 +64,7 @@ public class SettingsWindow extends JFrame {
 			wireframe = pds.useWireframe();
 			scaleSizeSlider = pds.getScaleSize();
 			heightAmplifySlider = pds.getHeightAmplify();
-			detailSlider = pds.getArrWidth();
+			detailSlider = pds.getArrWidth() - 1;
 
 			initPlaneDrawer();
 		} else {
@@ -149,11 +149,11 @@ public class SettingsWindow extends JFrame {
 			@Override
 			public void stateChanged(ChangeEvent e) {
 				JSlider slider = (JSlider) e.getSource();
-				detailSlider = slider.getValue();
+				detailSlider = slider.getValue() + 1;
 			}
 		});
 
-		JCheckBox wireframeBox = new JCheckBox("Wireframe");
+		JCheckBox wireframeBox = new JCheckBox("Wireframe Only");
 		wireframeBox.setSelected(wireframe);
 		wireframeBox.addChangeListener(new ChangeListener() {
 			@Override

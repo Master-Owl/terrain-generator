@@ -80,20 +80,17 @@ public class PlaneDrawer extends Applet {
 		width = terrainMap.getWidth();
 	}
 
-	public static Appearance createAppearance(boolean wireframe) {
+	public Appearance wireframeAppearance() {
 		Appearance ap = new Appearance();
 
-		if (wireframe) {
-			// Render as wireframe
-			PolygonAttributes polyAttr = new PolygonAttributes();
-			polyAttr.setPolygonMode(PolygonAttributes.POLYGON_LINE);
-			polyAttr.setCullFace(PolygonAttributes.CULL_NONE);
-			ap.setPolygonAttributes(polyAttr);
-		} else {
-			Material mat = new Material(new Color3f(Color.green), new Color3f(Color.black), new Color3f(Color.white),
-					new Color3f(Color.black), 1.0f);
-			ap.setMaterial(mat);
-		}
+		// Render as wireframe
+		PolygonAttributes polyAttr = new PolygonAttributes();
+		ColoringAttributes ca = new ColoringAttributes();
+		ca.setColor(new Color3f(0, 0, 0));
+		polyAttr.setPolygonMode(PolygonAttributes.POLYGON_LINE);
+		polyAttr.setCullFace(PolygonAttributes.CULL_NONE);
+		ap.setPolygonAttributes(polyAttr);
+		ap.setColoringAttributes(ca);
 
 		return ap;
 	}
@@ -116,24 +113,29 @@ public class PlaneDrawer extends Applet {
 
 		add("Center", canvas);
 
-		if (useWireframe) initWireframe(group2, amplify, scale);
-		else initPlane(group2, amplify, scale);		
+		if (useWireframe) {
+			initWireframe(group2, amplify, scale);
+		}
+		else {
+			initPlane(group2, amplify, scale);
+			initWireframe(group2, amplify, scale);
+		}	
 
-//		DirectionalLight dl = getDirectionalLight(Color.white, size, -size, -size);
-//		DirectionalLight dl2 = getDirectionalLight(Color.white, -size, -size, size);
+		DirectionalLight dl = getDirectionalLight(Color.white, size, -size, -size);
+		DirectionalLight dl2 = getDirectionalLight(Color.white, -size, -size, size);
 		BoundingSphere bounds = new BoundingSphere(new Point3d(0.0, 0.0, 0.0), 1000.0);		
 		Transform3D initialView = lookTowardsOriginFrom(new Point3d(0.0, 0.75, -(double)size * 2));
 		objTrans = initMouseBehavior();
 
-//		dl.setInfluencingBounds(bounds);
-//		dl2.setInfluencingBounds(bounds);
+		dl.setInfluencingBounds(bounds);
+		dl2.setInfluencingBounds(bounds);
 		objTrans.addChild(group2);
 
 		BranchGroup children = new BranchGroup();
 		children.setCapability(BranchGroup.ALLOW_DETACH);
 		children.addChild(objTrans);
-//		children.addChild(dl);
-//		children.addChild(dl2);
+		children.addChild(dl);
+		children.addChild(dl2);
 
 		group.addChild(children);
 
@@ -146,7 +148,7 @@ public class PlaneDrawer extends Applet {
 		float diff = -(float) centerPoint.y;
 
 		for (int i = 0; i < mesh.length; ++i) {
-			Shape3D meshLine = new Shape3D(mesh[i], createAppearance(true));
+			Shape3D meshLine = new Shape3D(mesh[i], wireframeAppearance());
 
 			TransformGroup centerPlane = new TransformGroup();
 			Transform3D centerTrans = new Transform3D();
@@ -185,11 +187,16 @@ public class PlaneDrawer extends Applet {
 		}		
 
 		BranchGroup group2 = new BranchGroup();
-//		DirectionalLight dl = getDirectionalLight(Color.white, size, -size, -size);
-//		DirectionalLight dl2 = getDirectionalLight(Color.white, -size, -size, size);
+		DirectionalLight dl = getDirectionalLight(Color.white, size, -size, -size);
+		DirectionalLight dl2 = getDirectionalLight(Color.white, -size, -size, size);
 		
-		if (useWireframe) initWireframe(group2, amplify, getScale(size));
-		else initPlane(group2, amplify, getScale(size));
+		if (useWireframe) {
+			initWireframe(group2, amplify, getScale(size));
+		}
+		else {
+			initPlane(group2, amplify, getScale(size));
+			initWireframe(group2, amplify, getScale(size));
+		}
 
 		TransformGroup objTrans = initMouseBehavior();
 		
@@ -198,8 +205,8 @@ public class PlaneDrawer extends Applet {
 		BranchGroup children = new BranchGroup();
 		children.setCapability(BranchGroup.ALLOW_DETACH);
 		children.addChild(objTrans);
-//		children.addChild(dl);
-//		children.addChild(dl2);
+		children.addChild(dl);
+		children.addChild(dl2);
 
 		group.addChild(children);
 	}
@@ -271,14 +278,23 @@ public class PlaneDrawer extends Applet {
 					terrainMap.getTerrainPoint(x2, y1).getBiome().color(), // top left
 					terrainMap.getTerrainPoint(x2, y2).getBiome().color()  // top right
 				};
+				
+				Color3f[] colors3f = {
+					new Color3f(colors[0]), // bottom left
+					new Color3f(colors[1]), // bottom right
+					new Color3f(colors[2]), // top left
+					new Color3f(colors[3])  // top right
+				};
 
 				for (int i = 0; i < 4; ++i){
 					alterPoint(points[i], scaleHeight, scaleLengthWidth);
 					quadArray.setCoordinate(i, points[i]);
 					quadArray.setNormal(i, getNormal(points[i]));
-					quadArray.setColor(i, new Color3f(colors[i]));
-					
+//					quadArray.setColor(i, colors[i]);		
+					colors3f[i] = blendColors(colors);
 				}
+
+				quadArray.setColors(0, colors3f);
 				
 				if (row == height / 2 && col == width / 2) {
 					centerPoint.x = points[0].x;
@@ -332,9 +348,9 @@ public class PlaneDrawer extends Applet {
 		}
 		
 		return new Color3f(
-				redSum 	 / colors.length, 
-				greenSum / colors.length,
-				blueSum  / colors.length);
+				(redSum   / colors.length) / 255f, 
+				(greenSum / colors.length) / 255f,
+				(blueSum  / colors.length) / 255f);
 	}
 	
 	private TransformGroup initMouseBehavior(){
