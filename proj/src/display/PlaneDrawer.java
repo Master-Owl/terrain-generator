@@ -51,15 +51,15 @@ public class PlaneDrawer extends Applet {
 		width = noiseMap[0].length;
 		setDefaults();
 	}
-	
-	public PlaneDrawer(TerrainMap map){
+
+	public PlaneDrawer(TerrainMap map) {
 		terrainMap = map;
 		height = map.getHeight();
 		width = map.getWidth();
 		setDefaults();
 	}
-	
-	private void setDefaults(){
+
+	private void setDefaults() {
 		centerPoint = new Point3d();
 		universe = null;
 		canvas = null;
@@ -81,12 +81,12 @@ public class PlaneDrawer extends Applet {
 		Appearance ap = new Appearance();
 		PolygonAttributes polyAttr = new PolygonAttributes();
 		ColoringAttributes ca = new ColoringAttributes();
-		
+
 		if (wireframeOnly)
 			ca.setColor(new Color3f(1, 1, 1));
 		else
 			ca.setColor(new Color3f(0, 0, 0));
-		
+
 		polyAttr.setPolygonMode(PolygonAttributes.POLYGON_LINE);
 		polyAttr.setCullFace(PolygonAttributes.CULL_NONE);
 		ap.setPolygonAttributes(polyAttr);
@@ -113,16 +113,13 @@ public class PlaneDrawer extends Applet {
 
 		add("Center", canvas);
 
-		if (!wireframeOnly) 
+		if (!wireframeOnly)
 			initPlane(group2, amplify, scale);
-			
-		initWireframe(group2, amplify, scale, wireframeOnly);
-		
-		BoundingSphere bounds = new BoundingSphere(new Point3d(0.0, 0.0, 0.0), 1000.0);		
-		Transform3D initialView = lookTowardsOriginFrom(new Point3d(0.0, 0.75, -(double)size * 2));
-		objTrans = initMouseBehavior();
 
-		group2.setBounds(bounds);
+		initWireframe(group2, amplify, scale, wireframeOnly);
+
+		Transform3D initialView = lookTowardsOriginFrom(new Point3d(0.0, 0.75, -(double) size * 2));
+		objTrans = initMouseBehavior();
 		objTrans.addChild(group2);
 
 		BranchGroup children = new BranchGroup();
@@ -130,7 +127,6 @@ public class PlaneDrawer extends Applet {
 		children.addChild(objTrans);
 
 		group.addChild(children);
-
 		universe.getViewingPlatform().getViewPlatformTransform().setTransform(initialView);
 		universe.addBranchGraph(group);
 	}
@@ -155,40 +151,40 @@ public class PlaneDrawer extends Applet {
 		}
 	}
 
-	public void initPlane(BranchGroup group, float amplify, float scale){
+	public void initPlane(BranchGroup group, float amplify, float scale) {
 		Shape3D[] quads = getQuads(amplify, scale);
 		float diff = -(float) centerPoint.y;
-		
-		for (int i = 0; i < quads.length; ++i){
+
+		for (int i = 0; i < quads.length; ++i) {
 			TransformGroup centerPlane = new TransformGroup();
 			Transform3D centerTrans = new Transform3D();
 			Vector3f centerVect = new Vector3f(-(width / height) * (width / 8.0f), diff,
 					-(height / width) * (height / 8.0f));
-			
+
 			centerTrans.setTranslation(centerVect);
 			centerPlane.setTransform(centerTrans);
 			centerPlane.addChild(quads[i]);
-			
+
 			group.addChild(centerPlane);
-		}	
+		}
 	}
-	
+
 	public void redraw(boolean wireframeOnly, float amplify, float size) {
-		for (int i = 0; i < group.numChildren(); ++i){
+		for (int i = 0; i < group.numChildren(); ++i) {
 			group.removeChild(group.getChild(i));
-		}		
+		}
 
 		BranchGroup group2 = new BranchGroup();
 		DirectionalLight dl = getDirectionalLight(Color.white, size, -size, -size);
 		DirectionalLight dl2 = getDirectionalLight(Color.white, -size, -size, size);
-		
-		if (!wireframeOnly) 
+
+		if (!wireframeOnly)
 			initPlane(group2, amplify, getScale(size));
-		
-		initWireframe(group2, amplify, getScale(size), wireframeOnly);		
+
+		initWireframe(group2, amplify, getScale(size), wireframeOnly);
 
 		TransformGroup objTrans = initMouseBehavior();
-		
+
 		objTrans.addChild(group2);
 
 		BranchGroup children = new BranchGroup();
@@ -199,7 +195,7 @@ public class PlaneDrawer extends Applet {
 
 		group.addChild(children);
 	}
-	
+
 	private LineStripArray[] getMesh(float scaleHeight, float scaleLengthWidth) {
 		LineStripArray[] mesh = new LineStripArray[width + height];
 
@@ -239,58 +235,56 @@ public class PlaneDrawer extends Applet {
 
 		return mesh;
 	}
-	
-	private Shape3D[] getQuads(float scaleHeight, float scaleLengthWidth){
+
+	private Shape3D[] getQuads(float scaleHeight, float scaleLengthWidth) {
 		int quadCount = 0;
 		Shape3D[] quads = new Shape3D[determineQuadCount()];
-		
-		for (int row = 0; row < height - 1; ++row){
-			for (int col = 0; col < width - 1; ++col){
-				QuadArray quadArray = new QuadArray(4, 
+
+		for (int row = 0; row < height - 1; ++row) {
+			for (int col = 0; col < width - 1; ++col) {
+				QuadArray quadArray = new QuadArray(4,
 						GeometryArray.COORDINATES | GeometryArray.COLOR_3 | GeometryArray.NORMALS);
-				
+
 				int x1 = col;
 				int x2 = col + 1;
 				int y1 = row;
 				int y2 = row + 1;
-				
+
 				Point3f[] points = { 
-					new Point3f(terrainMap.getTerrainPoint(x1, y1).getPoint()),					
+					new Point3f(terrainMap.getTerrainPoint(x1, y1).getPoint()),
 					new Point3f(terrainMap.getTerrainPoint(x2, y1).getPoint()),
 					new Point3f(terrainMap.getTerrainPoint(x2, y2).getPoint()),
-					new Point3f(terrainMap.getTerrainPoint(x1, y2).getPoint())
-				};
-				
-				Color[] colors = {
+					new Point3f(terrainMap.getTerrainPoint(x1, y2).getPoint())};
+
+				Color[] colors = { 
 					terrainMap.getTerrainPoint(x1, y1).getBiome().color(), // bottom left
 					terrainMap.getTerrainPoint(x1, y2).getBiome().color(), // bottom right
 					terrainMap.getTerrainPoint(x2, y1).getBiome().color(), // top left
 					terrainMap.getTerrainPoint(x2, y2).getBiome().color()  // top right
 				};
-				
-				Color3f[] colors3f = {
-					new Color3f(colors[0]), // bottom left
-					new Color3f(colors[1]), // bottom right
-					new Color3f(colors[2]), // top left
-					new Color3f(colors[3])  // top right
+
+				Color3f[] colors3f = { 
+						new Color3f(colors[0]), // bottom left
+						new Color3f(colors[1]), // bottom right
+						new Color3f(colors[2]), // top left
+						new Color3f(colors[3])  // top right
 				};
 
-				for (int i = 0; i < 4; ++i){
+				for (int i = 0; i < 4; ++i) {
 					alterPoint(points[i], scaleHeight, scaleLengthWidth);
 					quadArray.setCoordinate(i, points[i]);
 					quadArray.setNormal(i, getNormal(points[i]));
-//					quadArray.setColor(i, colors[i]);		
 					colors3f[i] = blendColors(colors);
 				}
 
 				quadArray.setColors(0, colors3f);
-				
+
 				if (row == height / 2 && col == width / 2) {
 					centerPoint.x = points[0].x;
 					centerPoint.y = points[0].y;
 					centerPoint.z = points[0].z;
 				}
-				
+
 				Appearance ap = new Appearance();
 				PolygonAttributes pa = new PolygonAttributes();
 				pa.setPolygonMode(PolygonAttributes.POLYGON_FILL);
@@ -299,84 +293,80 @@ public class PlaneDrawer extends Applet {
 				quads[quadCount++] = new Shape3D(quadArray, ap);
 			}
 		}
-		
-		return quads;		
+
+		return quads;
 	}
-	
-	private void alterPoint(Point3f point, float scaleHeight, float scaleLengthWidth){
+
+	private void alterPoint(Point3f point, float scaleHeight, float scaleLengthWidth) {
 		point.x *= scaleLengthWidth;
 		point.y *= scaleHeight;
 		point.z *= scaleLengthWidth;
 	}
-	
-	private Vector3f getNormal(Point3f point){
+
+	private Vector3f getNormal(Point3f point) {
 		Vector3f normal = new Vector3f(point);
 		normal.normalize();
 		return normal;
 	}
-	
-	private Color3f blendColors(Color[] colors){
+
+	private Color3f blendColors(Color[] colors) {
 		int r[] = new int[colors.length];
 		int g[] = new int[colors.length];
 		int b[] = new int[colors.length];
-		
-		for (int i = 0; i < colors.length; ++i){
+
+		for (int i = 0; i < colors.length; ++i) {
 			r[i] = colors[i].getRed();
 			g[i] = colors[i].getGreen();
 			b[i] = colors[i].getBlue();
 		}
-		
-		int redSum	 = 0;
+
+		int redSum = 0;
 		int greenSum = 0;
-		int blueSum  = 0;
-		
-		for (int i = 0; i < colors.length; ++i){
-			redSum 	 += r[i];
+		int blueSum = 0;
+
+		for (int i = 0; i < colors.length; ++i) {
+			redSum += r[i];
 			greenSum += g[i];
-			blueSum  += b[i];
+			blueSum += b[i];
 		}
-		
-		return new Color3f(
-				(redSum   / colors.length) / 255f, 
-				(greenSum / colors.length) / 255f,
-				(blueSum  / colors.length) / 255f);
+
+		return new Color3f((redSum / colors.length) / 255f, (greenSum / colors.length) / 255f,
+				(blueSum / colors.length) / 255f);
 	}
-	
-	private TransformGroup initMouseBehavior(){
-		if (objTrans != null){
-			BranchGroup parent = (BranchGroup)objTrans.getParent();
+
+	private TransformGroup initMouseBehavior() {
+		if (objTrans != null) {
+			BranchGroup parent = (BranchGroup) objTrans.getParent();
 			parent.removeChild(objTrans);
 			objTrans.removeAllChildren();
-		} 
-		else {
+		} else {
 			objTrans = new TransformGroup();
 			objTrans.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
-			objTrans.setCapability(TransformGroup.ALLOW_CHILDREN_EXTEND);
-			objTrans.setCapability(TransformGroup.ALLOW_CHILDREN_READ);
-			objTrans.setCapability(TransformGroup.ALLOW_CHILDREN_WRITE);
+			objTrans.setCapability(Group.ALLOW_CHILDREN_EXTEND);
+			objTrans.setCapability(Group.ALLOW_CHILDREN_READ);
+			objTrans.setCapability(Group.ALLOW_CHILDREN_WRITE);
 		}
-		
+
 		BoundingSphere bounds = new BoundingSphere(new Point3d(0.0, 0.0, 0.0), 100.0);
-		
+
 		MouseRotate objRotate = new MouseRotate();
-		objRotate.setTransformGroup(objTrans);	
+		objRotate.setTransformGroup(objTrans);
 		objRotate.setSchedulingBounds(bounds);
 		objRotate.setFactor(0.01, -0.01);
-		
+
 		MouseTranslate objTranslate = new MouseTranslate();
-		objTranslate.setTransformGroup(objTrans);	
+		objTranslate.setTransformGroup(objTrans);
 		objTranslate.setSchedulingBounds(bounds);
 		objTranslate.setFactor(-0.01, 0.01);
-		
+
 		MouseWheelZoom objZoom = new MouseWheelZoom();
 		objZoom.setTransformGroup(objTrans);
 		objZoom.setSchedulingBounds(bounds);
-		
+
 		objTrans.addChild(objRotate);
 		objTrans.addChild(objTranslate);
 		objTrans.addChild(objZoom);
-		
-		
+
 		return objTrans;
 	}
 
@@ -387,8 +377,8 @@ public class PlaneDrawer extends Applet {
 	private DirectionalLight getDirectionalLight(Color c, float x, float y, float z) {
 		return new DirectionalLight(new Color3f(c), new Vector3f(x, y, z));
 	}
-	
-	private AmbientLight getLight(Color c){
+
+	private AmbientLight getLight(Color c) {
 		return new AmbientLight(new Color3f(c));
 	}
 
@@ -444,7 +434,7 @@ public class PlaneDrawer extends Applet {
 		return move;
 	}
 
-	private int determineQuadCount(){
-		return (width - 1) * (height - 1);		
+	private int determineQuadCount() {
+		return (width - 1) * (height - 1);
 	}
 }
