@@ -11,6 +11,7 @@ import javax.media.j3d.Appearance;
 import javax.media.j3d.BoundingSphere;
 import javax.media.j3d.BranchGroup;
 import javax.media.j3d.Canvas3D;
+import javax.media.j3d.ColoringAttributes;
 import javax.media.j3d.DirectionalLight;
 import javax.media.j3d.GeometryArray;
 import javax.media.j3d.Group;
@@ -118,18 +119,21 @@ public class PlaneDrawer extends Applet {
 		if (useWireframe) initWireframe(group2, amplify, scale);
 		else initPlane(group2, amplify, scale);		
 
-		DirectionalLight dl = getDirectionalLight(Color.white);
+//		DirectionalLight dl = getDirectionalLight(Color.white, size, -size, -size);
+//		DirectionalLight dl2 = getDirectionalLight(Color.white, -size, -size, size);
 		BoundingSphere bounds = new BoundingSphere(new Point3d(0.0, 0.0, 0.0), 1000.0);		
 		Transform3D initialView = lookTowardsOriginFrom(new Point3d(0.0, 0.75, -(double)size * 2));
 		objTrans = initMouseBehavior();
 
-		dl.setInfluencingBounds(bounds);
+//		dl.setInfluencingBounds(bounds);
+//		dl2.setInfluencingBounds(bounds);
 		objTrans.addChild(group2);
 
 		BranchGroup children = new BranchGroup();
 		children.setCapability(BranchGroup.ALLOW_DETACH);
 		children.addChild(objTrans);
-		children.addChild(dl);
+//		children.addChild(dl);
+//		children.addChild(dl2);
 
 		group.addChild(children);
 
@@ -181,6 +185,8 @@ public class PlaneDrawer extends Applet {
 		}		
 
 		BranchGroup group2 = new BranchGroup();
+//		DirectionalLight dl = getDirectionalLight(Color.white, size, -size, -size);
+//		DirectionalLight dl2 = getDirectionalLight(Color.white, -size, -size, size);
 		
 		if (useWireframe) initWireframe(group2, amplify, getScale(size));
 		else initPlane(group2, amplify, getScale(size));
@@ -192,7 +198,8 @@ public class PlaneDrawer extends Applet {
 		BranchGroup children = new BranchGroup();
 		children.setCapability(BranchGroup.ALLOW_DETACH);
 		children.addChild(objTrans);
-		children.addChild(getLight(Color.white));
+//		children.addChild(dl);
+//		children.addChild(dl2);
 
 		group.addChild(children);
 	}
@@ -244,7 +251,7 @@ public class PlaneDrawer extends Applet {
 		for (int row = 0; row < height - 1; ++row){
 			for (int col = 0; col < width - 1; ++col){
 				QuadArray quadArray = new QuadArray(4, 
-						GeometryArray.COORDINATES | GeometryArray.NORMALS | GeometryArray.COLOR_3);
+						GeometryArray.COORDINATES | GeometryArray.COLOR_3 | GeometryArray.NORMALS);
 				
 				int x1 = col;
 				int x2 = col + 1;
@@ -252,10 +259,10 @@ public class PlaneDrawer extends Applet {
 				int y2 = row + 1;
 				
 				Point3f[] points = { 
-					new Point3f(terrainMap.getTerrainPoint(x1, y1).getPoint()),
-					new Point3f(terrainMap.getTerrainPoint(x1, y2).getPoint()),
+					new Point3f(terrainMap.getTerrainPoint(x1, y1).getPoint()),					
 					new Point3f(terrainMap.getTerrainPoint(x2, y1).getPoint()),
-					new Point3f(terrainMap.getTerrainPoint(x2, y2).getPoint())
+					new Point3f(terrainMap.getTerrainPoint(x2, y2).getPoint()),
+					new Point3f(terrainMap.getTerrainPoint(x1, y2).getPoint())
 				};
 				
 				Color[] colors = {
@@ -267,10 +274,11 @@ public class PlaneDrawer extends Applet {
 
 				for (int i = 0; i < 4; ++i){
 					alterPoint(points[i], scaleHeight, scaleLengthWidth);
+					quadArray.setCoordinate(i, points[i]);
 					quadArray.setNormal(i, getNormal(points[i]));
 					quadArray.setColor(i, new Color3f(colors[i]));
-					quadArray.setCoordinate(i, points[i]);
-				}	
+					
+				}
 				
 				if (row == height / 2 && col == width / 2) {
 					centerPoint.x = points[0].x;
@@ -279,13 +287,10 @@ public class PlaneDrawer extends Applet {
 				}
 				
 				Appearance ap = new Appearance();
-				Material mat = new Material();
-				Color3f specular = new Color3f(blendColors(colors));
-				mat.setDiffuseColor(blendColors(colors));
-				specular.scale(5.0f);
-				specular.clampMax(0.8f);
-				mat.setSpecularColor(specular);
-				ap.setMaterial(mat);
+				PolygonAttributes pa = new PolygonAttributes();
+				pa.setPolygonMode(PolygonAttributes.POLYGON_FILL);
+				pa.setCullFace(PolygonAttributes.CULL_NONE);
+				ap.setPolygonAttributes(pa);
 				quads[quadCount++] = new Shape3D(quadArray, ap);
 			}
 		}
@@ -374,8 +379,8 @@ public class PlaneDrawer extends Applet {
 		return size / ((width + height) / 2.0f);
 	}
 
-	private DirectionalLight getDirectionalLight(Color c) {
-		return new DirectionalLight(new Color3f(c), new Vector3f(4.0f, -7.0f, -12.0f));
+	private DirectionalLight getDirectionalLight(Color c, float x, float y, float z) {
+		return new DirectionalLight(new Color3f(c), new Vector3f(x, y, z));
 	}
 	
 	private AmbientLight getLight(Color c){

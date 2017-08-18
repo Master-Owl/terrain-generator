@@ -34,7 +34,7 @@ public class SettingsWindow extends JFrame {
 	private final float MAX_SCALE = 10.0f;
 	private final float MIN_HEIGHT = 1.00f;
 	private final float MAX_HEIGHT = 40.0f;
-	private final int MIN_DETAIL = 10;
+	private final int MIN_DETAIL = 1;
 	private final int MAX_DETAIL = 100;
 
 	private int octavesSlider;

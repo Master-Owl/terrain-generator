@@ -25,10 +25,17 @@ public class GUI implements AppWindow {
 	private PlaneDrawerSettings settings;
 	private SettingsWindow settingsWindow;
 	private NoiseGenerator generator;
+	
+	private long elevationSeed;
+	private long temperatureSeed;
+	private long moistureSeed;
 
 	public GUI(String windowName, Dimension windowSize) {
 		this.windowName = windowName;
 		this.windowSize = windowSize;
+		elevationSeed = 0;
+		temperatureSeed = 0;
+		moistureSeed = 0;
 	}
 
 	@Override
@@ -48,15 +55,21 @@ public class GUI implements AppWindow {
 		Random rand = new Random();
 		PlaneDrawerSettings pds = (PlaneDrawerSettings) settingsWindow.getSettings();
 		
-		if (!keepseed) pds.setSeed(rand.nextLong());
+		if (!keepseed){
+			elevationSeed = rand.nextLong();
+			temperatureSeed = rand.nextLong();
+			moistureSeed = rand.nextLong();
+		}
+		
+		pds.setSeed(elevationSeed);
 		generator.changeSettings(pds);
 		float[][] elevation = generator.generatePerlinNoise(pds.getOctaves());
 		
-		if (!keepseed) pds.setSeed(rand.nextLong());
+		pds.setSeed(temperatureSeed);
 		generator.changeSettings(pds);
 		float[][] temperature = generator.generatePerlinNoise(pds.getOctaves());
 			
-		if (!keepseed) pds.setSeed(rand.nextLong());
+		pds.setSeed(moistureSeed);
 		generator.changeSettings(pds);
 		float[][] moisture = generator.generatePerlinNoise(pds.getOctaves());
 		
@@ -79,9 +92,12 @@ public class GUI implements AppWindow {
 	private void initContent() {
 		try {
 		Random rand = new Random();
-
+		elevationSeed = rand.nextLong();
+		temperatureSeed = rand.nextLong();
+		moistureSeed = rand.nextLong();
+		
 		settings = new PlaneDrawerSettings();
-		settings.setSeed(rand.nextLong());
+		settings.setSeed(elevationSeed);
 		settings.useWireframe(false);
 		settings.setScaleSize(7.0f);
 		settings.setDetailLevel(35);
@@ -90,15 +106,14 @@ public class GUI implements AppWindow {
 		
 		float[][] elevation = generator.generatePerlinNoise(settings.getOctaves());
 		
-		settings.setSeed(rand.nextLong());
+		settings.setSeed(temperatureSeed);
 		generator.changeSettings(settings);
 		float[][] temperature = generator.generatePerlinNoise(settings.getOctaves());
 			
-		settings.setSeed(rand.nextLong());
+		settings.setSeed(moistureSeed);
 		generator.changeSettings(settings);
 		float[][] moisture = generator.generatePerlinNoise(settings.getOctaves());
 
-		generator = new NoiseGenerator(settings.getSeed(), settings.getArrWidth(), settings.getDetailLevel());		
 		planeDrawer = new PlaneDrawer(new TerrainMap(elevation, temperature, moisture));		
 		planeDrawer.init(settings.useWireframe(), settings.getHeightAmplify(), settings.getScaleSize());
 		settingsWindow = new SettingsWindow(settings, this);
