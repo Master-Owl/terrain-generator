@@ -4,7 +4,6 @@ import java.applet.Applet;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.GraphicsConfiguration;
-import java.awt.Point;
 
 import javax.media.j3d.AmbientLight;
 import javax.media.j3d.Appearance;
@@ -16,8 +15,6 @@ import javax.media.j3d.DirectionalLight;
 import javax.media.j3d.GeometryArray;
 import javax.media.j3d.Group;
 import javax.media.j3d.LineStripArray;
-import javax.media.j3d.Material;
-import javax.media.j3d.Node;
 import javax.media.j3d.PolygonAttributes;
 import javax.media.j3d.QuadArray;
 import javax.media.j3d.Shape3D;
@@ -82,8 +79,6 @@ public class PlaneDrawer extends Applet {
 
 	public Appearance wireframeAppearance(boolean wireframeOnly) {
 		Appearance ap = new Appearance();
-
-		// Render as wireframe
 		PolygonAttributes polyAttr = new PolygonAttributes();
 		ColoringAttributes ca = new ColoringAttributes();
 		
@@ -118,29 +113,21 @@ public class PlaneDrawer extends Applet {
 
 		add("Center", canvas);
 
-		if (wireframeOnly) {
-			initWireframe(group2, amplify, scale, wireframeOnly);
-		}
-		else {
+		if (!wireframeOnly) 
 			initPlane(group2, amplify, scale);
-			initWireframe(group2, amplify, scale, wireframeOnly);
-		}	
-
-		DirectionalLight dl = getDirectionalLight(Color.white, size, -size, -size);
-		DirectionalLight dl2 = getDirectionalLight(Color.white, -size, -size, size);
+			
+		initWireframe(group2, amplify, scale, wireframeOnly);
+		
 		BoundingSphere bounds = new BoundingSphere(new Point3d(0.0, 0.0, 0.0), 1000.0);		
 		Transform3D initialView = lookTowardsOriginFrom(new Point3d(0.0, 0.75, -(double)size * 2));
 		objTrans = initMouseBehavior();
 
-		dl.setInfluencingBounds(bounds);
-		dl2.setInfluencingBounds(bounds);
+		group2.setBounds(bounds);
 		objTrans.addChild(group2);
 
 		BranchGroup children = new BranchGroup();
 		children.setCapability(BranchGroup.ALLOW_DETACH);
 		children.addChild(objTrans);
-		children.addChild(dl);
-		children.addChild(dl2);
 
 		group.addChild(children);
 
@@ -195,13 +182,10 @@ public class PlaneDrawer extends Applet {
 		DirectionalLight dl = getDirectionalLight(Color.white, size, -size, -size);
 		DirectionalLight dl2 = getDirectionalLight(Color.white, -size, -size, size);
 		
-		if (wireframeOnly) {
-			initWireframe(group2, amplify, getScale(size), wireframeOnly);
-		}
-		else {
+		if (!wireframeOnly) 
 			initPlane(group2, amplify, getScale(size));
-			initWireframe(group2, amplify, getScale(size), wireframeOnly);
-		}
+		
+		initWireframe(group2, amplify, getScale(size), wireframeOnly);		
 
 		TransformGroup objTrans = initMouseBehavior();
 		

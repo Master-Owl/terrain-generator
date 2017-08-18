@@ -141,7 +141,7 @@ public class SettingsWindow extends JFrame {
 		});
 
 		JSlider detail = new JSlider(JSlider.HORIZONTAL, MIN_DETAIL, MAX_DETAIL, detailSlider);
-		detail.setMajorTickSpacing(20);
+		detail.setMajorTickSpacing(30);
 		detail.setMinorTickSpacing(5);
 		detail.setPaintLabels(true);
 		detail.setPaintTicks(true);
