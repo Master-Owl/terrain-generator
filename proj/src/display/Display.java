@@ -15,14 +15,14 @@ public class Display {
 		System.out.println("Program Started");
 		System.setProperty("sun.awt.noerasebackground", "true");
 
-//		test3DAxis();
+//		test3D();
 //		plane();
 		application();
 	}
 	
-	private static void test3DAxis(){
+	private static void test3D(){
 		Test3D td = new Test3D();
-		td.axis3D();
+		td.interactions();
 		
 		new MainFrame(td, 500, 500);
 	}
@@ -30,7 +30,8 @@ public class Display {
 	private static void plane(){
 		int size = 25;
 		float amplify = 25.0f;
-		boolean useWireframe = true;
+		boolean useWireframe = false;
+		boolean autoRotate = true;
 		Random rand = new Random();
 		long seed = rand.nextLong();
 		
@@ -38,7 +39,7 @@ public class Display {
 		NoiseGenerator gen = new NoiseGenerator(seed, size, size);
 		
 		PlaneDrawer pd = new PlaneDrawer(gen.generatePerlinNoise(8));
-		pd.init(useWireframe, amplify, 7.0f);
+		pd.init(useWireframe, autoRotate, amplify, 7.0f);
 		
 		new MainFrame(pd, 1000, 1000);
 	}

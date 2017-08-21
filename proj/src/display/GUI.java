@@ -72,7 +72,8 @@ public class GUI implements AppWindow {
 		float[][] moisture = generator.generatePerlinNoise(pds.getOctaves());
 
 		planeDrawer.setNoiseMaps(elevation, temperature, moisture);
-		planeDrawer.redraw(pds.useWireframe(), pds.getHeightAmplify(), pds.getScaleSize());
+		planeDrawer.redraw(pds.useWireframe(), pds.getAutoRotate(),
+				pds.getHeightAmplify(), pds.getScaleSize());
 
 		windowContent.getComponent(0).revalidate();
 	}
@@ -96,9 +97,8 @@ public class GUI implements AppWindow {
 
 			settings = new PlaneDrawerSettings();
 			settings.setSeed(elevationSeed);
-			settings.useWireframe(false);
 			settings.setScaleSize(7.0f);
-			settings.setDetailLevel(40);
+			settings.setDetailLevel(35);
 			generator = new NoiseGenerator(settings.getSeed(), settings.getArrWidth(), settings.getArrHeight());
 
 			float[][] elevation = generator.generatePerlinNoise(settings.getOctaves());
@@ -112,7 +112,8 @@ public class GUI implements AppWindow {
 			float[][] moisture = generator.generatePerlinNoise(settings.getOctaves());
 
 			planeDrawer = new PlaneDrawer(new TerrainMap(elevation, temperature, moisture));
-			planeDrawer.init(settings.useWireframe(), settings.getHeightAmplify(), settings.getScaleSize());
+			planeDrawer.init(settings.useWireframe(), settings.getAutoRotate(),
+					settings.getHeightAmplify(), settings.getScaleSize());
 			settingsWindow = new SettingsWindow(settings, this);
 
 		} catch (Exception e) {
