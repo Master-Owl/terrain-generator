@@ -118,7 +118,7 @@ public class PlaneDrawer extends Applet {
 
 		initWireframe(group2, amplify, scale, wireframeOnly);
 
-		Transform3D initialView = lookTowardsOriginFrom(new Point3d(0.0, 0.75, -(double) size * 2));
+		Transform3D initialView = lookTowardsOriginFrom(new Point3d(0.0, -0.75, -(double) size * 2));
 		objTrans = initMouseBehavior();
 		objTrans.addChild(group2);
 
@@ -140,9 +140,8 @@ public class PlaneDrawer extends Applet {
 
 			TransformGroup centerPlane = new TransformGroup();
 			Transform3D centerTrans = new Transform3D();
-			Vector3f centerVect = new Vector3f(-(width / height) * (width / 8.0f), diff,
-					-(height / width) * (height / 8.0f));
-
+			Vector3f centerVect = new Vector3f(0, diff, 0);
+			
 			centerTrans.setTranslation(centerVect);
 			centerPlane.setTransform(centerTrans);
 			centerPlane.addChild(meshLine);
@@ -158,9 +157,8 @@ public class PlaneDrawer extends Applet {
 		for (int i = 0; i < quads.length; ++i) {
 			TransformGroup centerPlane = new TransformGroup();
 			Transform3D centerTrans = new Transform3D();
-			Vector3f centerVect = new Vector3f(-(width / height) * (width / 8.0f), diff,
-					-(height / width) * (height / 8.0f));
-
+			Vector3f centerVect = new Vector3f(0, diff, 0);
+			
 			centerTrans.setTranslation(centerVect);
 			centerPlane.setTransform(centerTrans);
 			centerPlane.addChild(quads[i]);

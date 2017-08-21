@@ -98,7 +98,7 @@ public class GUI implements AppWindow {
 			settings.setSeed(elevationSeed);
 			settings.useWireframe(false);
 			settings.setScaleSize(7.0f);
-			settings.setDetailLevel(35);
+			settings.setDetailLevel(40);
 			generator = new NoiseGenerator(settings.getSeed(), settings.getArrWidth(), settings.getArrHeight());
 
 			float[][] elevation = generator.generatePerlinNoise(settings.getOctaves());
