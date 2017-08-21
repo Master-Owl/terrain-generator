@@ -5,6 +5,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.GraphicsConfiguration;
 
+import javax.media.j3d.Alpha;
 import javax.media.j3d.AmbientLight;
 import javax.media.j3d.Appearance;
 import javax.media.j3d.BoundingSphere;
@@ -17,6 +18,7 @@ import javax.media.j3d.Group;
 import javax.media.j3d.LineStripArray;
 import javax.media.j3d.PolygonAttributes;
 import javax.media.j3d.QuadArray;
+import javax.media.j3d.RotationInterpolator;
 import javax.media.j3d.Shape3D;
 import javax.media.j3d.Transform3D;
 import javax.media.j3d.TransformGroup;
@@ -29,6 +31,7 @@ import javax.vecmath.Vector3f;
 import com.sun.j3d.utils.behaviors.mouse.MouseRotate;
 import com.sun.j3d.utils.behaviors.mouse.MouseTranslate;
 import com.sun.j3d.utils.behaviors.mouse.MouseWheelZoom;
+import com.sun.j3d.utils.behaviors.vp.OrbitBehavior;
 import com.sun.j3d.utils.geometry.Cone;
 import com.sun.j3d.utils.geometry.Cylinder;
 import com.sun.j3d.utils.geometry.Sphere;
@@ -95,7 +98,7 @@ public class PlaneDrawer extends Applet {
 		return ap;
 	}
 
-	public void init(boolean wireframeOnly, float amplify, float size) {
+	public void init(boolean wireframeOnly, boolean autoRotate, float amplify, float size) {
 		removeAll();
 		setLayout(new BorderLayout());
 
@@ -118,8 +121,8 @@ public class PlaneDrawer extends Applet {
 
 		initWireframe(group2, amplify, scale, wireframeOnly);
 
-		Transform3D initialView = lookTowardsOriginFrom(new Point3d(0.0, 0.75, -(double) size * 2));
-		objTrans = initMouseBehavior();
+		Transform3D initialView = lookTowardsOriginFrom(new Point3d(0.0, -0.75, -(double) size * 2));
+		objTrans = initTransformations(autoRotate);
 		objTrans.addChild(group2);
 
 		BranchGroup children = new BranchGroup();
@@ -140,9 +143,8 @@ public class PlaneDrawer extends Applet {
 
 			TransformGroup centerPlane = new TransformGroup();
 			Transform3D centerTrans = new Transform3D();
-			Vector3f centerVect = new Vector3f(-(width / height) * (width / 8.0f), diff,
-					-(height / width) * (height / 8.0f));
-
+			Vector3f centerVect = new Vector3f(0, diff, 0);
+			
 			centerTrans.setTranslation(centerVect);
 			centerPlane.setTransform(centerTrans);
 			centerPlane.addChild(meshLine);
@@ -158,9 +160,8 @@ public class PlaneDrawer extends Applet {
 		for (int i = 0; i < quads.length; ++i) {
 			TransformGroup centerPlane = new TransformGroup();
 			Transform3D centerTrans = new Transform3D();
-			Vector3f centerVect = new Vector3f(-(width / height) * (width / 8.0f), diff,
-					-(height / width) * (height / 8.0f));
-
+			Vector3f centerVect = new Vector3f(0, diff, 0);
+			
 			centerTrans.setTranslation(centerVect);
 			centerPlane.setTransform(centerTrans);
 			centerPlane.addChild(quads[i]);
@@ -169,7 +170,7 @@ public class PlaneDrawer extends Applet {
 		}
 	}
 
-	public void redraw(boolean wireframeOnly, float amplify, float size) {
+	public void redraw(boolean wireframeOnly, boolean autoRotate, float amplify, float size) {
 		for (int i = 0; i < group.numChildren(); ++i) {
 			group.removeChild(group.getChild(i));
 		}
@@ -183,7 +184,7 @@ public class PlaneDrawer extends Applet {
 
 		initWireframe(group2, amplify, getScale(size), wireframeOnly);
 
-		TransformGroup objTrans = initMouseBehavior();
+		TransformGroup objTrans = initTransformations(autoRotate);
 
 		objTrans.addChild(group2);
 
@@ -334,7 +335,7 @@ public class PlaneDrawer extends Applet {
 				(blueSum / colors.length) / 255f);
 	}
 
-	private TransformGroup initMouseBehavior() {
+	private TransformGroup initTransformations(boolean autoRot) {
 		if (objTrans != null) {
 			BranchGroup parent = (BranchGroup) objTrans.getParent();
 			parent.removeChild(objTrans);
@@ -347,25 +348,19 @@ public class PlaneDrawer extends Applet {
 			objTrans.setCapability(Group.ALLOW_CHILDREN_WRITE);
 		}
 
-		BoundingSphere bounds = new BoundingSphere(new Point3d(0.0, 0.0, 0.0), 100.0);
+		BoundingSphere bounds = new BoundingSphere(new Point3d(0.0, 0.0, 0.0), 100.0);		
+		OrbitBehavior orbit = new OrbitBehavior(canvas, OrbitBehavior.REVERSE_ROTATE);
+		orbit.setSchedulingBounds(bounds);
+		orbit.setTransXFactor(-1);
+		orbit.setTransYFactor(-1);
+		universe.getViewingPlatform().setViewPlatformBehavior(orbit);
 
-		MouseRotate objRotate = new MouseRotate();
-		objRotate.setTransformGroup(objTrans);
-		objRotate.setSchedulingBounds(bounds);
-		objRotate.setFactor(0.01, -0.01);
-
-		MouseTranslate objTranslate = new MouseTranslate();
-		objTranslate.setTransformGroup(objTrans);
-		objTranslate.setSchedulingBounds(bounds);
-		objTranslate.setFactor(-0.01, 0.01);
-
-		MouseWheelZoom objZoom = new MouseWheelZoom();
-		objZoom.setTransformGroup(objTrans);
-		objZoom.setSchedulingBounds(bounds);
-
-		objTrans.addChild(objRotate);
-		objTrans.addChild(objTranslate);
-		objTrans.addChild(objZoom);
+		if (autoRot){
+			RotationInterpolator autoRotate = new RotationInterpolator(
+				new Alpha(-1, 10000), objTrans);
+			autoRotate.setSchedulingBounds(bounds);
+			objTrans.addChild(autoRotate);
+		}
 
 		return objTrans;
 	}
@@ -376,54 +371,6 @@ public class PlaneDrawer extends Applet {
 
 	private DirectionalLight getDirectionalLight(Color c, float x, float y, float z) {
 		return new DirectionalLight(new Color3f(c), new Vector3f(x, y, z));
-	}
-
-	private AmbientLight getLight(Color c) {
-		return new AmbientLight(new Color3f(c));
-	}
-
-	private BranchGroup getAxisRef() {
-		BranchGroup group = new BranchGroup();
-		for (float x = -1.0f; x < 1.0f; x += 0.1f) {
-			Sphere s = new Sphere(0.05f);
-			TransformGroup tg = new TransformGroup();
-			Transform3D transform = new Transform3D();
-			Vector3f vect = new Vector3f(x, 0.0f, 0.0f); // from -1.0 to 1.0 on
-															// x axis
-
-			transform.setTranslation(vect);
-			tg.setTransform(transform);
-			tg.addChild(s);
-			group.addChild(tg);
-		}
-
-		for (float y = -1.0f; y < 1.0f; y += 0.1f) {
-			Cone c = new Cone(0.05f, 0.1f);
-			TransformGroup tg = new TransformGroup();
-			Transform3D transform = new Transform3D();
-			Vector3f vect = new Vector3f(0.0f, y, 0.0f); // from -1.0 to 1.0 on
-															// y axis
-
-			transform.setTranslation(vect);
-			tg.setTransform(transform);
-			tg.addChild(c);
-			group.addChild(tg);
-		}
-
-		for (float z = -1.0f; z < 1.0f; z += 0.1f) {
-			Cylinder c = new Cylinder(0.05f, 0.1f);
-			TransformGroup tg = new TransformGroup();
-			Transform3D transform = new Transform3D();
-			Vector3f vect = new Vector3f(0.0f, 0.0f, z); // from -1.0 to 1.0 on
-															// z axis
-
-			transform.setTranslation(vect);
-			tg.setTransform(transform);
-			tg.addChild(c);
-			group.addChild(tg);
-		}
-
-		return group;
 	}
 
 	private Transform3D lookTowardsOriginFrom(Point3d point) {

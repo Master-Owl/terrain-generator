@@ -21,13 +21,16 @@ public class TerrainMap {
 		width = elevationMap[0].length;
 		terrainMap = new TerrainPoint[height * width];
 		
+		int h_half = height / 2;
+		int w_half = width / 2;
+		
 		for (int row = 0; row < height; ++row){
 			for (int col = 0; col < width; ++col){
 				Point3f point = new Point3f();
 				
-				point.x = col;
+				point.x = col - w_half;
 				point.y = elevationMap[row][col];
-				point.z = row;
+				point.z = row - h_half;
 				
 				terrainMap[(row * width) + col] = new TerrainPoint(point);
 			}
@@ -37,6 +40,8 @@ public class TerrainMap {
 	public TerrainMap(float[][] elevationMap, float[][] temperatureMap, float[][] moistureMap) throws Exception{
 		height = elevationMap.length;
 		width = elevationMap[0].length;
+		int h_half = height / 2;
+		int w_half = width / 2;
 		Exception e = new Exception("The given arrays must be the same size.");
 		
 		if (height != temperatureMap.length
@@ -51,9 +56,9 @@ public class TerrainMap {
 			for (int col = 0; col < width; ++col){
 				Point3f point = new Point3f();
 				
-				point.x = col;
+				point.x = col - w_half;
 				point.y = elevationMap[row][col];
-				point.z = row;
+				point.z = row - h_half;
 				
 				Biome b = MapInterpreter.GetBiome(
 							elevationMap[row][col],

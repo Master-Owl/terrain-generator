@@ -41,6 +41,7 @@ public class SettingsWindow extends JFrame {
 	private float persistenceSlider;
 
 	private boolean wireframe;
+	private boolean autoRotate;
 	private float scaleSizeSlider;
 	private float heightAmplifySlider;
 	private int detailSlider;
@@ -62,6 +63,7 @@ public class SettingsWindow extends JFrame {
 			PlaneDrawerSettings pds = new PlaneDrawerSettings(s);
 			settings = pds;
 			wireframe = pds.useWireframe();
+			autoRotate = pds.getAutoRotate();
 			scaleSizeSlider = pds.getScaleSize();
 			heightAmplifySlider = pds.getHeightAmplify();
 			detailSlider = pds.getArrWidth() - 1;
@@ -162,21 +164,32 @@ public class SettingsWindow extends JFrame {
 				wireframe = box.isSelected();
 			}
 		});
+		
+		JCheckBox autoRotateBox = new JCheckBox("Auto-Rotate");
+		autoRotateBox.setSelected(autoRotate);
+		autoRotateBox.addChangeListener(new ChangeListener() {			
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				JCheckBox box = (JCheckBox)e.getSource();
+				autoRotate = box.isSelected();
+			}
+		});
 
 		JPanel scalePanel = new JPanel();
 		JPanel amplifyPanel = new JPanel();
 		JPanel detailPanel = new JPanel();
-		JPanel wireframePanel = new JPanel();
+		JPanel miscPanel = new JPanel();
 
 		scalePanel.add(scaleSize);
 		amplifyPanel.add(amplify);
 		detailPanel.add(detail);
-		wireframePanel.add(wireframeBox);
+		miscPanel.add(wireframeBox);
+		miscPanel.add(autoRotateBox);
 
 		tabbedPane.add("Size", scalePanel);
 		tabbedPane.add("Height Amplify", amplifyPanel);
 		tabbedPane.add("Detail Level", detailPanel);
-		tabbedPane.add("Wireframe", wireframePanel);
+		tabbedPane.add("Misc.", miscPanel);
 	}
 
 	private void apply() {
@@ -190,10 +203,10 @@ public class SettingsWindow extends JFrame {
 				if (settings instanceof PlaneDrawerSettings) {
 					((PlaneDrawerSettings) settings).setScaleSize(scaleSizeSlider);
 					((PlaneDrawerSettings) settings).setHeightAmplify(heightAmplifySlider);
-					((PlaneDrawerSettings) settings).useWireframe(wireframe);
 					((PlaneDrawerSettings) settings).setDetailLevel(detailSlider);
+					((PlaneDrawerSettings) settings).useWireframe(wireframe);
+					((PlaneDrawerSettings) settings).setAutoRotate(autoRotate);
 				}
-
 				window.generate(true);
 				setVisible(false);
 			}

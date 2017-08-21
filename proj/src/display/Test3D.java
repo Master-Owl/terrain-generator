@@ -15,6 +15,8 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+
+import javax.media.j3d.Alpha;
 import javax.media.j3d.AmbientLight;
 import javax.media.j3d.Appearance;
 import javax.media.j3d.BoundingSphere;
@@ -24,6 +26,7 @@ import javax.media.j3d.ColoringAttributes;
 import javax.media.j3d.DirectionalLight;
 import javax.media.j3d.Material;
 import javax.media.j3d.Node;
+import javax.media.j3d.RotationInterpolator;
 import javax.media.j3d.Shape3D;
 import javax.media.j3d.Texture;
 import javax.media.j3d.Texture2D;
@@ -242,17 +245,36 @@ public class Test3D extends Applet {
 
 		OrbitBehavior behavior = new OrbitBehavior(canvas, OrbitBehavior.REVERSE_ROTATE);
 		BoundingSphere bounds = new BoundingSphere(new Point3d(0.0, 0.0, 0.0), 100.0);
-		objTrans = new TransformGroup();
+		objTrans = rotate(box, new Alpha(-1, 5000));
 
 		behavior.setSchedulingBounds(bounds);
 		behavior.setRotXFactor(1);
 		behavior.setRotYFactor(1);
-		objTrans.addChild(box);
 		group.addChild(objTrans);
 
 		universe.getViewingPlatform().setViewPlatformBehavior(behavior);
 		universe.getViewingPlatform().setNominalViewingTransform();
 		universe.addBranchGraph(group);
+	}
+	
+	private TransformGroup rotate(Node node, Alpha alpha){
+	      TransformGroup transformGroup = new TransformGroup();
+	      transformGroup.setCapability(
+	                    TransformGroup.ALLOW_TRANSFORM_WRITE);
+
+	      //Create an interpolator for rotating the node.
+	      RotationInterpolator interpolator = 
+	               new RotationInterpolator(alpha, transformGroup);
+
+	      //Establish the animation region
+	      interpolator.setSchedulingBounds(new BoundingSphere(
+	                           new Point3d(0, 0, 0), 1.0));
+
+	      //Populate the group.
+	      transformGroup.addChild(interpolator);
+	      transformGroup.addChild(node);
+
+	      return transformGroup;
 	}
 
 	public Appearance getAppearance(Color3f color) {
