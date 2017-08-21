@@ -21,12 +21,13 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import display.AppWindow;
 import terrain.enums.Biome;
 import perlinNoise.NoiseGenerator;
 import perlinNoise.NoiseInterpreter;
 import perlinNoise.Settings;
 
-public class Window {
+public class Window implements AppWindow{
     private JFrame window;
     private String windowName;
     private Random rand;
@@ -45,9 +46,9 @@ public class Window {
     private JPanel TemperaturePanel;
     private JPanel MoisturePanel;
 
-    private NoiseParameters ElevationParams;
-    private NoiseParameters TemperatureParams;
-    private NoiseParameters MoistureParams;
+    private SettingsWindow ElevationParams;
+    private SettingsWindow TemperatureParams;
+    private SettingsWindow MoistureParams;
 
     private JButton regenerate;
     private static JLabel BiomeLabel;
@@ -61,6 +62,7 @@ public class Window {
         generator = new NoiseGenerator(0, width / 3, height - (height / 4));
     }
 
+    @Override
     public void init(){
         window = new JFrame(windowName);
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -83,9 +85,9 @@ public class Window {
                 screenSize.height / 2 - (window_height / 2),
                 window_width, window_height);
 
-        ElevationParams = new NoiseParameters(new Settings(generator.getSettings()), this);
-        TemperatureParams = new NoiseParameters(new Settings(generator.getSettings()), this);
-        MoistureParams = new NoiseParameters(new Settings(generator.getSettings()), this);
+        ElevationParams = new SettingsWindow(new Settings(generator.getSettings()), this);
+        TemperatureParams = new SettingsWindow(new Settings(generator.getSettings()), this);
+        MoistureParams = new SettingsWindow(new Settings(generator.getSettings()), this);
 
         generate(false);
 
@@ -194,10 +196,12 @@ public class Window {
         window.pack();
     }
 
+    @Override
     public void show(){
         window.setVisible(true);
     }
 
+    @Override
     public void generate(boolean keepSeed){
         generator.changeSettings(ElevationParams.getSettings());
         if (!keepSeed)
@@ -227,51 +231,11 @@ public class Window {
             repaint();
     }
 
-    private String determineBiome(Biome b){
-        switch(b){
-            case OCEAN:
-                return "Ocean";
-            case BEACH:
-                return "Beach";
-            case DESERT:
-                return "Desert";
-            case TEMPERATE_DESERT:
-                return "Temperate Desert";
-            case SCORCHED_DESERT:
-                return "Scorched Desert";
-            case GRASSLAND:
-                return "Grassland";
-            case SHRUBLAND:
-                return "Shrubland";
-            case CRAG:
-                return "Crag";
-            case LAKES:
-                return "Lakes";
-            case MARSH:
-                return "Marsh";
-            case PLAINS:
-                return "Plains";
-            case FOREST:
-                return "Forest";
-            case RAIN_FOREST:
-                return "Rain Forest";
-            case TAIGA:
-                return "Taiga";
-            case TUNDRA:
-                return "Tundra";
-            case SNOW:
-                return "Snow";
-        }
-
-        return "err";
-    }
-
     private void changeBiomeLabel(MouseEvent e){
         int x = e.getX();
         int y = e.getY();
         BiomeLabel.setText("Biome: "
-                + determineBiome(MapInterpreter
-                .GetBiome(ElevationNoise[x][y], TemperatureNoise[x][y], MoistureNoise[x][y])));
+                + MapInterpreter.GetBiome(ElevationNoise[x][y], TemperatureNoise[x][y], MoistureNoise[x][y]).toString());
     }
 
     private void repaint(){

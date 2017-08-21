@@ -1,6 +1,5 @@
 package terrain;
 
-
 import terrain.enums.Biome;
 import terrain.enums.Elevation;
 import terrain.enums.Moisture;
@@ -31,7 +30,7 @@ public class MapInterpreter {
     private static final float WARM      = 0.75f;
     private static final float HOT       = 0.90f;
 
-    public static Biome GetBiome(float elevation, float temperature, float moisture){
+    public static Biome GetBiome(float elevation, float temperature, float moisture){    	
         switch(GetElevation(elevation)){
             case SEA_LEVEL:
                 return Biome.OCEAN;

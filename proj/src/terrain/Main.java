@@ -3,9 +3,6 @@ package terrain;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
-/**
- * The class to pull all the other classes together and create a terrain
- */
 public class Main {
     public static void main(String[] args) {
         try {
