@@ -37,6 +37,8 @@ import com.sun.j3d.utils.geometry.Cylinder;
 import com.sun.j3d.utils.geometry.Sphere;
 import com.sun.j3d.utils.universe.SimpleUniverse;
 
+import terrain.TerrainMap;
+
 public class PlaneDrawer extends Applet {
 	private TerrainMap terrainMap;
 	private int width;
@@ -79,6 +81,8 @@ public class PlaneDrawer extends Applet {
 		height = terrainMap.getHeight();
 		width = terrainMap.getWidth();
 	}
+	
+	public TerrainMap getTerrainMap() { return terrainMap; }
 
 	public Appearance wireframeAppearance(boolean wireframeOnly) {
 		Appearance ap = new Appearance();

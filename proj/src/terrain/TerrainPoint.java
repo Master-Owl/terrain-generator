@@ -1,4 +1,4 @@
-package display;
+package terrain;
 
 import javax.vecmath.Point3f;
 

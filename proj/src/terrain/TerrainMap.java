@@ -1,8 +1,7 @@
-package display;
+package terrain;
 
 import javax.vecmath.Point3f;
 
-import terrain.MapInterpreter;
 import terrain.enums.Biome;
 
 public class TerrainMap {

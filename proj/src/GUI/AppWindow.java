@@ -1,4 +1,4 @@
-package display;
+package GUI;
 
 public interface AppWindow {
 

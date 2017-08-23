@@ -1,4 +1,4 @@
-package display;
+package GUI;
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -10,8 +10,10 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import display.PlaneDrawer;
+import display.PlaneDrawerSettings;
 import perlinNoise.NoiseGenerator;
-import terrain.SettingsWindow;
+import terrain.TerrainMap;
 
 public class GUI implements AppWindow {
 	private JFrame window;
@@ -27,6 +29,8 @@ public class GUI implements AppWindow {
 	private long elevationSeed;
 	private long temperatureSeed;
 	private long moistureSeed;
+	
+	public static TerrainMap mapData = null;
 
 	public GUI(String windowName, Dimension windowSize) {
 		this.windowName = windowName;
@@ -115,7 +119,7 @@ public class GUI implements AppWindow {
 			planeDrawer.init(settings.useWireframe(), settings.getAutoRotate(),
 					settings.getHeightAmplify(), settings.getScaleSize());
 			settingsWindow = new SettingsWindow(settings, this);
-
+			mapData = planeDrawer.getTerrainMap();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

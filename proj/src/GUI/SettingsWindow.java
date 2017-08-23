@@ -1,22 +1,24 @@
-package terrain;
+package GUI;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import display.AppWindow;
 import display.PlaneDrawerSettings;
+import export.SaveMesh;
 import perlinNoise.Settings;
 
 public class SettingsWindow extends JFrame {
@@ -32,8 +34,8 @@ public class SettingsWindow extends JFrame {
 
 	private final float MIN_SCALE = 2.00f;
 	private final float MAX_SCALE = 10.0f;
-	private final float MIN_HEIGHT = 1.00f;
-	private final float MAX_HEIGHT = 40.0f;
+	private final float MIN_HEIGHT = 0.00f;
+	private final float MAX_HEIGHT = 20.0f;
 	private final int MIN_DETAIL = 10;
 	private final int MAX_DETAIL = 100;
 
@@ -45,6 +47,8 @@ public class SettingsWindow extends JFrame {
 	private float scaleSizeSlider;
 	private float heightAmplifySlider;
 	private int detailSlider;
+	
+	public 	static String EXPORT_LOCATION = "." + File.separator + "exports";
 
 	public SettingsWindow(Settings s, AppWindow w) {
 		super();
@@ -53,6 +57,7 @@ public class SettingsWindow extends JFrame {
 		persistenceSlider = s.getPersistence();
 		Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
 		setBounds(screenSize.width / 2, screenSize.height / 2, 500, 200);
+		setTitle("Settings");
 		contentPane = new JPanel();
 		tabbedPane = new JTabbedPane();
 		contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.Y_AXIS));
@@ -131,7 +136,7 @@ public class SettingsWindow extends JFrame {
 
 		JSlider amplify = new JSlider(JSlider.HORIZONTAL, (int) MIN_HEIGHT, (int) MAX_HEIGHT,
 				(int) heightAmplifySlider);
-		amplify.setMajorTickSpacing(5);
+		amplify.setMajorTickSpacing(4);
 		amplify.setMinorTickSpacing(1);
 		amplify.setPaintLabels(true);
 		amplify.setPaintTicks(true);
@@ -213,7 +218,49 @@ public class SettingsWindow extends JFrame {
 		});
 
 		contentPane.add(tabbedPane);
-		contentPane.add(apply);
+		JPanel buttons = new JPanel();
+		buttons.setLayout(new BoxLayout(buttons, BoxLayout.X_AXIS));
+		buttons.add(apply);
+		
+		if (settings instanceof PlaneDrawerSettings){
+			JButton export = new JButton("Export Map");
+			export.addActionListener(new ActionListener() {				
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					if (!SaveMesh.WriteToFile(
+							EXPORT_LOCATION + File.separator + "landscape.obj",
+							SaveMesh.StringifyData(GUI.mapData)))
+						return;
+					
+					JFrame popup = new JFrame();
+					JLabel text = new JLabel();
+					JPanel pane = new JPanel();
+					JButton ok = new JButton("Ok");
+					
+					ok.addActionListener(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							popup.setVisible(false);
+						}
+					});
+					
+					Dimension screenSize = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
+					popup.setBounds(screenSize.width / 2, screenSize.height / 2, 500, 200);
+					popup.setLayout(new BorderLayout());
+					pane.setLayout(new BoxLayout(pane, BoxLayout.Y_AXIS));					
+					text.setText("Saved!");
+					
+					pane.add(text);
+					pane.add(ok);
+					popup.getContentPane().add(pane);
+					popup.pack();
+					popup.setVisible(true);
+				}
+			});
+			buttons.add(export);
+		}
+		
+		contentPane.add(buttons);
 		getContentPane().add(contentPane);
 	}
 }

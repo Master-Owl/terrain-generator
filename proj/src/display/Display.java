@@ -5,6 +5,7 @@ import java.util.Random;
 
 import com.sun.j3d.utils.applet.MainFrame;
 
+import GUI.GUI;
 import perlinNoise.NoiseGenerator;
 
 // Docs: http://java.sun.com/products/java-media/3D/forDevelopers/j3dapi/index.html 

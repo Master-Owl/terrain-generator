@@ -21,7 +21,8 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import display.AppWindow;
+import GUI.AppWindow;
+import GUI.SettingsWindow;
 import terrain.enums.Biome;
 import perlinNoise.NoiseGenerator;
 import perlinNoise.NoiseInterpreter;
