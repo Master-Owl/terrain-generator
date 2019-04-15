@@ -14,4 +14,10 @@
 	<natures>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 	</natures>
+	<variableList>
+		<variable>
+			<name>J3D</name>
+			<value>file:/C:/Program%20Files/Java/Java3D/1.5.1</value>
+		</variable>
+	</variableList>
 </projectDescription>

@@ -7,5 +7,8 @@
 			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="C:/Program Files (x86)/Java/Java3D/1.5.1/bin"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/trevorkh/Personal/Procedural_Terrain_Generator/ProceduralTerrainGenerator_lib/j3dcore.jar"/>
+	<classpathentry kind="lib" path="C:/Users/trevorkh/Personal/Procedural_Terrain_Generator/ProceduralTerrainGenerator_lib/j3dutils.jar"/>
+	<classpathentry kind="lib" path="C:/Users/trevorkh/Personal/Procedural_Terrain_Generator/ProceduralTerrainGenerator_lib/vecmath.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

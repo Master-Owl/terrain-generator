@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<head>
+
+</head>
+<body>
+  <script src="https://www.java.com/js/deployJava.js"></script>
+  <script>
+      var dir = location.href.substring(0,location.href.lastIndexOf('/')+1);
+      var url = dir + "terrain-gen-webapp.jnlp"
+      deployJava.createWebStartLaunchButton(url, '1.7.0');
+  </script>
+</body>

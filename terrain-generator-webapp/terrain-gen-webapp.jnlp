@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jnlp spec="1.0+" codebase="/" href="terrain-gen-webapp.jnlp">
+    <information>
+        <title>Procedural Terrain Generator</title>
+        <vendor>Trevor Howell</vendor>
+    </information>
+    <resources>
+        <!-- Application Resources -->
+        <jar href="terrain-gen-webapp.jar" main="true" />
+    </resources>
+    <application-desc
+         name="Procedural Terrain Generator"
+         main-class="display.Display.main"
+         width="500"
+         height="500">
+     </application-desc>
+     <update check="background"/>
+</jnlp>       
